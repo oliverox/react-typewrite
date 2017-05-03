@@ -1,0 +1,25 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+.demo {
+  -webkit-font-smoothing: antialiased;
+}
+
+.demo-logo {
+  height: 25px;
+  vertical-align: middle;
+}
+
+.demo-header {
+  background-color: #222;
+  line-height: 32px;
+  height: 32px;
+  color: white;
+}
+
+.demo-title {
+  font-weight: bold;
+}
