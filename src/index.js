@@ -24,11 +24,12 @@ class Typewrite extends Component {
   }
 
   getTypingDelay() {
-    const {typingDelay} = this.props;
+    const {averageTypingDelay} = this.props;
     return Math.floor(
       Math.random() * (
-        (typingDelay + TYPING_DELAY_INTERVAL) - (typingDelay - TYPING_DELAY_INTERVAL)
-      )) + (typingDelay - TYPING_DELAY_INTERVAL);
+        (averageTypingDelay + TYPING_DELAY_INTERVAL)
+        - (averageTypingDelay - TYPING_DELAY_INTERVAL)
+      )) + (averageTypingDelay - TYPING_DELAY_INTERVAL);
   }
 
   getNextCharacter(onMount) {
@@ -84,7 +85,7 @@ class Typewrite extends Component {
 Typewrite.defaultProps = {
   htmlTag: 'span',
   initialDelay: 300,
-  typingDelay: 65,
+  averageTypingDelay: 80,
 };
 
 Typewrite.propTypes = {
@@ -96,7 +97,7 @@ Typewrite.propTypes = {
   className: PropTypes.string,
   children: PropTypes.string.isRequired,
   initialDelay: PropTypes.number,
-  typingDelay: PropTypes.number,
+  averageTypingDelay: PropTypes.number,
 };
 
 export default Typewrite;
