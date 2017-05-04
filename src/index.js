@@ -1,33 +1,53 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-
 const styles = {
   color: 'hotpink',
-}
+},
+TYPING_DELAY_INTERVAL = 30;
 
 class Typewrite extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      text: ''
+      text: '',
+      typingDone: false,
     }
   }
 
   componentDidMount() {
-    const {initialDelay, typingDelay, children} = this.props;
-    let delay = initialDelay;
+    const {children} = this.props;
+    this.iterator = function* iterateChar() {
+      var index = 0;
+      while (index < children.length) {
+        yield children[index++];
+      }
+    }()
+    this.getNextCharacter(true);
+  }
 
-    const animate = (char) => {
-      return function() {
-        this.appendCharacter(char);
-      }.bind(this)
-    }
+  getTypingDelay() {
+    const {typingDelay} = this.props;
+    return Math.floor(
+      Math.random() * (
+        (typingDelay + TYPING_DELAY_INTERVAL) - (typingDelay - TYPING_DELAY_INTERVAL)
+      )) + (typingDelay - TYPING_DELAY_INTERVAL);
+  }
 
-    for (let char of children) {
-      console.log('character:', char);
-      window.setTimeout(animate(char), delay);
-      delay = typingDelay;
-    }
+  getNextCharacter(onMount) {
+    const delay = (onMount) ? this.props.initialDelay : this.getTypingDelay();
+    window.setTimeout(function() {
+      const next = this.iterator.next();
+      if (!next.done) {
+        this.appendCharacter(next.value);
+        this.getNextCharacter(false);
+      } else {
+        window.setTimeout(function() {
+          this.setState({
+            typingDone: true
+          });
+        }.bind(this), 5000);
+      }
+    }.bind(this), delay);
   }
 
   appendCharacter(char) {
@@ -35,7 +55,6 @@ class Typewrite extends Component {
     this.setState({
       text: `${currentText}${char}`
     });
-    this.forceUpdate();
   }
 
   render() {
@@ -43,11 +62,21 @@ class Typewrite extends Component {
     const Tag = htmlTag;
     return(
       <Tag style={styles} {...rest}>
-        {this.state.text}<div style={{
-          display: 'inline',
-          border: '1px solid',
-          marginLeft: 1
-        }}></div>
+        <style dangerouslySetInnerHTML={{
+          __html: [
+            '@keyframes blinker {',
+            '  50% { opacity: 0; }',
+            '}',
+            '.typewrite-cursor {',
+            '  display: inline;',
+            '  border: 1px solid;',
+            '  margin-left: 3px;',
+            '  animation: blinker 1s ease-out infinite;',
+            '}'
+          ].join('\n')
+        }}/>
+        {this.state.text}
+        {!this.state.typingDone && <div className="typewrite-cursor"></div>}
       </Tag>
     );
   }
@@ -56,7 +85,7 @@ class Typewrite extends Component {
 Typewrite.defaultProps = {
   htmlTag: 'span',
   initialDelay: 300,
-  typingDelay: 2000,
+  typingDelay: 65,
 };
 
 Typewrite.propTypes = {
