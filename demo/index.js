@@ -12,7 +12,7 @@ class Demo extends Component {
           <img src={logo} className="demo-logo" alt="logo" />
           <span className="demo-title">Component Demo</span>
         </div>
-        <h2>Following text will be typed. <DemoComponent>Hello there! What's going on today?</DemoComponent></h2>
+        <h2>Following text will be typed. <DemoComponent className="typewrite">Hello there! What's going on today?</DemoComponent></h2>
       </div>
     );
   }

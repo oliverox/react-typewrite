@@ -1,9 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-const styles = {
-  color: 'hotpink',
-},
-TYPING_DELAY_INTERVAL = 30;
+
+const TYPING_DELAY_INTERVAL = 80;
 
 class Typewrite extends Component {
   constructor(props) {
@@ -61,22 +59,23 @@ class Typewrite extends Component {
     const {htmlTag, initialDelay, typingDelay, children, ...rest} = this.props;
     const Tag = htmlTag;
     return(
-      <Tag style={styles} {...rest}>
+      <Tag {...rest}>
         <style dangerouslySetInnerHTML={{
-          __html: [
-            '@keyframes blinker {',
-            '  50% { opacity: 0; }',
-            '}',
-            '.typewrite-cursor {',
-            '  display: inline;',
-            '  border: 1px solid;',
-            '  margin-left: 3px;',
-            '  animation: blinker 1s ease-out infinite;',
-            '}'
-          ].join('\n')
-        }}/>
+          __html:`
+            @keyframes blinker {
+              50% { opacity: 0; }
+            }
+            .typewrite-cursor {
+              display: inline;
+              border: 1px solid;
+              margin-left: 3px;
+              animation: blinker 1s ease-out infinite;
+            }`
+        }} />
         {this.state.text}
-        {!this.state.typingDone && <div className="typewrite-cursor"></div>}
+        <div className="typewrite-cursor" style={{
+          opacity: (this.state.typingDone) ? 0 : 1
+        }}></div>
       </Tag>
     );
   }
