@@ -10,17 +10,27 @@ class Typewrite extends Component {
       text: '',
       typingDone: false,
     }
+    this.deleteQueue = [];
+    this.currentIndex = 0;
   }
 
   componentDidMount() {
-    const {children} = this.props;
+    const {children, startTyping} = this.props;
     this.iterator = function* iterateChar() {
       var index = 0;
       while (index < children.length) {
         yield children[index++];
       }
     }()
-    this.getNextCharacter(true);
+    if (startTyping) {
+      this.typeCharacter(true);
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.startTyping !== this.props.startTyping) {
+      this.typeCharacter();
+    }
   }
 
   getTypingDelay() {
@@ -32,13 +42,25 @@ class Typewrite extends Component {
       )) + (averageTypingDelay - TYPING_DELAY_INTERVAL);
   }
 
-  getNextCharacter(onMount) {
+  getNextCharacter() {
+    // Return deleted characters before digging into the iterator stack
+    if (this.deleteQueue.length > 0) {
+      return {
+        value: this.deleteQueue.splice(-1),
+        done: false
+      }
+    } else {
+      return this.iterator.next();
+    }
+  }
+
+  typeCharacter(onMount = false) {
     const delay = (onMount) ? this.props.initialDelay : this.getTypingDelay();
     window.setTimeout(function() {
-      const next = this.iterator.next();
+      const next = this.getNextCharacter();
       if (!next.done) {
         this.appendCharacter(next.value);
-        this.getNextCharacter(false);
+        this.typeCharacter();
       } else {
         window.setTimeout(function() {
           this.setState({
@@ -57,10 +79,9 @@ class Typewrite extends Component {
   }
 
   render() {
-    const {htmlTag, initialDelay, typingDelay, children, ...rest} = this.props;
-    const Tag = htmlTag;
+    const {htmlTag, className} = this.props, Tag = htmlTag;
     return(
-      <Tag {...rest}>
+      <Tag className={className}>
         <style dangerouslySetInnerHTML={{
           __html:`
             @keyframes blinker {
@@ -84,6 +105,7 @@ class Typewrite extends Component {
 
 Typewrite.defaultProps = {
   htmlTag: 'span',
+  startTyping: true,
   initialDelay: 300,
   averageTypingDelay: 80,
 };
@@ -94,10 +116,11 @@ Typewrite.propTypes = {
     'h1', 'h2', 'h3',
     'h4', 'h5', 'h6'
   ]),
-  className: PropTypes.string,
-  children: PropTypes.string.isRequired,
-  initialDelay: PropTypes.number,
   averageTypingDelay: PropTypes.number,
+  children: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  initialDelay: PropTypes.number,
+  startTyping: PropTypes.bool,
 };
 
 export default Typewrite;
