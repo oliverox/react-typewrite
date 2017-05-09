@@ -6,6 +6,7 @@ body {
 
 .demo {
   -webkit-font-smoothing: antialiased;
+  padding: 10px;
 }
 
 .demo-logo {
