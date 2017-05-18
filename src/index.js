@@ -5,11 +5,13 @@ class Typewrite extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      toRender: [],
-      doneTyping: false,
+      toRender: <span key="0" className="typewrite"></span>,
+      typingDone: false,
     }
-    this.toRender = [];
-    this.characterPtr = 0;
+    this.key = 0;
+    this.totalCharacterLength = 0;
+    this.currentCharIndex = 0;
+    this.targetCharIndex = 0;
   }
 
   componentWillMount() {
@@ -17,116 +19,142 @@ class Typewrite extends Component {
   }
 
   componentDidMount() {
-    const {children, pause} = this.props;
-    if (pause === false) {
-      new Promise((resolve, reject) => {
-        this.typeWrite(children, resolve, reject);
-      }).then(() => {
-        console.log('typing done!');
-        this.setState({
-          doneTyping: true
-        });
-      });
-    }
+    const {children, className, pause, hideCursorDelay} = this.props;
+    this.root = <span key="0" className={(className) ? `${className} typewrite` : 'typewrite'}>{React.Children.toArray(children)}</span>
+    this.totalCharacterLength = this.getTotalCharacterLength(this.root, 0);
+    this.tree = this.buildTree(this.root);
+    const promise = new Promise((resolve, reject) => {
+      this.startTyping(resolve, reject);
+    }).then(() => {
+      console.log('Typing done!');
+    })
   }
 
   componentDidUpdate(prevProps) {
-    const {children, pause} = this.props;
-    if ((prevProps.pause !== pause) && !pause) {
-      new Promise((resolve, reject) => {
-        this.typeWrite(children, resolve, reject);
-      }).then(() => {
-        console.log('typing done!');
-        this.setState({
-          doneTyping: true
-        });
-      });
-    }
+    // const {children, pause, hideCursorDelay} = this.props;
+    // if ((prevProps.pause !== pause) && !pause) {
+    //   new Promise((resolve, reject) => {
+    //     this.typeWrite(children, resolve, reject);
+    //   }).then(() => {
+    //     console.log('typing done!');
+    //     (hideCursorDelay > -1) && this.hideCursor();
+    //   });
+    // }
   }
 
-  delay() {
-    const {maxTypingDelay, minTypingDelay} = this.props;
-    return Math.floor(Math.random() * (maxTypingDelay - minTypingDelay + 1)) + minTypingDelay;
-  }
+  startTyping(mainResolve, mainReject) {
+    const {maxTypingDelay, minTypingDelay} = this.props,
+          self = this;
 
-  typeWrite(el, resolve, reject) {
-    // debugger;
-    if (Array.isArray(el)) {
-      const self = this;
-      const mainResolve = resolve;
-      (function each(index) {
-        const promise = new Promise((resolve, reject) => {
-          console.log('each: index', index);
-          // debugger;
-          if (index >= el.length) {
-            return mainResolve();
-          }
-          self.characterPtr = 0;
-          self.typeWrite(el[index], resolve, reject)
-        }).then(() => (index < el.length && each(index + 1)));
-      })(0);
-    }
-    else if (React.isValidElement(el)) {
-      this.toRender.push(<el.type key={this.toRender.length} {...el.props}>{''}</el.type>);
-      if (typeof(el.props.children) === 'string') {
-        this.animateTyping(el.props.children, resolve, reject);
+    (function type(charIndex) {
+      if (charIndex > self.totalCharacterLength) {
+        mainResolve();
       } else {
-        this.typeWrite(el.props.children, resolve, reject);
+        const delay = Math.floor(Math.random() * (maxTypingDelay - minTypingDelay + 1)) + minTypingDelay;
+        self.targetCharIndex = charIndex;
+        self.currentCharIndex = 0;
+        console.log('targetCharIndex=', self.targetCharIndex);
+        new Promise((resolve, reject) => {
+          const newTree = self.duplicateTree(self.tree);
+          const toRender = self.renderTree(newTree);
+          setTimeout(() => {
+            console.log('inside timeout', charIndex);
+            console.log('newTree', newTree);
+            self.setState({toRender});
+            resolve();
+          }, delay);
+        }).then(() => {
+          type(charIndex + 1);
+        })
+      }
+    })(1);
+  }
+
+  buildTree(el) {
+    const self = this;
+    if (Array.isArray(el)) {
+      return el.map((child) => {
+        return self.buildTree(child)
+      })
+    } else if (typeof(el) === 'string') {
+      return {
+        el: 'string',
+        children: el
+      }
+    } else if (React.isValidElement(el)) {
+      const {children, ...otherProps} = el.props;
+      return {
+        el: el.type,
+        key: this.key++,
+        props: otherProps,
+        children: self.buildTree(children)
       }
     }
-    else if (typeof(el) === 'string') {
-      this.toRender.push('');
-      this.animateTyping(el, resolve, reject);
-    }
   }
 
-  animateTyping(text, mainResolve, mainReject) {
-    const last = this.toRender.length - 1;
-    const element = this.toRender[last];
+  duplicateTree(tree) {
+    const self = this;
+    if (self.currentCharIndex >= self.targetCharIndex) return null;
 
-    if (React.isValidElement(element)) {
-      const promise = new Promise((resolve, reject) => {
-        setTimeout(function() {
-          this.toRender[last] = React.cloneElement(
-            element,
-            {},
-            element.props.children.concat(text[this.characterPtr])
-          );
-          this.updateState();
-          this.characterPtr++;
-          resolve();
-        }.bind(this), this.delay());
-      }).then(function() {
-        if (this.characterPtr < text.length) {
-          this.animateTyping(text, mainResolve, mainReject);
-        } else {
-          this.characterPtr = 0;
-          mainResolve();
+    if (tree.el === 'string') {
+      if ((self.currentCharIndex + tree.children.length) < self.targetCharIndex) {
+        self.currentCharIndex = self.currentCharIndex + tree.children.length;
+        return tree;
+      } else {
+        const ind = self.targetCharIndex - self.currentCharIndex;
+        self.currentCharIndex = self.targetCharIndex;
+        return {
+          el: tree.el,
+          children: tree.children.slice(0, ind)
         }
-      }.bind(this))
-    }
-    else if (typeof(element) === 'string') {
-      const promise = new Promise((resolve, reject) => {
-        setTimeout(function() {
-          this.toRender[last] = this.toRender[last].concat(text[this.characterPtr]);
-          this.updateState();
-          this.characterPtr++;
-          resolve();
-        }.bind(this), this.delay());
-      }).then(() => {
-        if (this.characterPtr < text.length) {
-          this.animateTyping(text, mainResolve, mainReject);
-        } else {
-          mainResolve();
-        }
+      }
+    } else if (tree.el && tree.el !== 'string') {
+      return {
+        el: tree.el,
+        props: tree.props,
+        key: tree.props,
+        children: self.duplicateTree(tree.children)
+      }
+    } else if (Array.isArray(tree)) {
+      return (tree.map((child) => {
+        return self.duplicateTree(child)
+      })).filter((child) => {
+        return ((child !== null) && (typeof(child) !== 'undefined'))
       });
     }
   }
 
-  updateState() {
-    this.setState({
-      toRender: this.toRender
-    });
+  renderTree(tree) {
+    const self = this;
+    if (tree.el === 'string') {
+      return tree.children;
+    } else if (Array.isArray(tree)) {
+      return tree.map((child) => {
+        return self.renderTree(child);
+      });
+    } else if ((typeof(tree) === 'object') && tree.el) {
+      return <tree.el key={tree.key} {...tree.props}>{
+        self.renderTree(tree.children)
+      }</tree.el>
+    } else {
+      throw {
+        msg: 'Invalid tree',
+        value: tree
+      };
+    }
+  }
+
+  getTotalCharacterLength(el, start) {
+    const self = this;
+    let total = start;
+    React.Children.forEach(el.props.children, (child) => {
+      if (typeof(child) === 'string') {
+        total = total + child.length;
+      } else {
+        total = self.getTotalCharacterLength(child, total);
+      }
+    })
+    return total;
   }
 
   injectStyles() {
@@ -196,11 +224,7 @@ class Typewrite extends Component {
   }
 
   render() {
-    let {className} = this.props;
-    const {doneTyping} = this.state;
-    className = (className) ? `${className} typewrite` : 'typewrite';
-    className = (doneTyping) ? `${className} done` : className;
-    return <span className={className}>{this.state.toRender}</span>
+    return this.state.toRender;
   }
 }
 
@@ -209,7 +233,7 @@ Typewrite.defaultProps = {
   endOfLineDelay: 1000,
   minTypingDelay: 50,
   maxTypingDelay: 80,
-  hideCursorOnDone: true,
+  hideCursorDelay: -1,
 };
 
 Typewrite.propTypes = {
@@ -223,7 +247,7 @@ Typewrite.propTypes = {
   endOfLineDelay: PropTypes.number,
   minTypingDelay: PropTypes.number,
   maxTypingDelay: PropTypes.number,
-  hideCursorOnDone: PropTypes.bool,
+  hideCursorDelay: PropTypes.number,
 };
 
 export default Typewrite;
