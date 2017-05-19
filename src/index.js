@@ -5,8 +5,7 @@ class Typewrite extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      toRender: <span key="0" className="typewrite"></span>,
-      typingDone: false,
+      toRender: <span key="0" className="typewrite"></span>
     }
     this.key = 0;
     this.totalCharacterLength = 0;
@@ -27,6 +26,7 @@ class Typewrite extends Component {
       this.startTyping(resolve, reject);
     }).then(() => {
       console.log('Typing done!');
+      this.hideCursor();
     })
   }
 
@@ -42,6 +42,21 @@ class Typewrite extends Component {
     // }
   }
 
+  hideCursor() {
+    const self = this,
+          newClassName = this.props.className ? `${this.props.className} done` : 'done',
+          toRender = React.cloneElement(
+            this.state.toRender,
+            Object.assign({}, this.props, {className: newClassName})
+          );
+
+    setTimeout(() => {
+      self.setState({
+        toRender
+      })
+    }, this.props.hideCursorDelay);
+  }
+
   startTyping(mainResolve, mainReject) {
     const {maxTypingDelay, minTypingDelay} = this.props,
           self = this;
@@ -53,13 +68,10 @@ class Typewrite extends Component {
         const delay = Math.floor(Math.random() * (maxTypingDelay - minTypingDelay + 1)) + minTypingDelay;
         self.targetCharIndex = charIndex;
         self.currentCharIndex = 0;
-        console.log('targetCharIndex=', self.targetCharIndex);
         new Promise((resolve, reject) => {
           const newTree = self.duplicateTree(self.tree);
           const toRender = self.renderTree(newTree);
           setTimeout(() => {
-            console.log('inside timeout', charIndex);
-            console.log('newTree', newTree);
             self.setState({toRender});
             resolve();
           }, delay);
@@ -112,7 +124,7 @@ class Typewrite extends Component {
       return {
         el: tree.el,
         props: tree.props,
-        key: tree.props,
+        key: tree.key,
         children: self.duplicateTree(tree.children)
       }
     } else if (Array.isArray(tree)) {
