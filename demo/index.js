@@ -1,8 +1,8 @@
-import React, { Component } from "react";
-import ReactDOM from "react-dom";
-import TypeWrite from "../src/index";
-import logo from "./logo.svg";
-import "./demo.css";
+import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
+import TypeWrite from '../src/index';
+import logo from './logo.svg';
+import './demo.css';
 
 class Demo extends Component {
   constructor() {
@@ -86,69 +86,78 @@ class Demo extends Component {
         </div>
 
         <div style={{ marginBottom: 10, marginTop: 50 }}>
-          <TypeWrite pause={pause1} hideCursorDelay={2500}>
-            Oliver <strong>Oxenham</strong> was here.
+          <TypeWrite wordByWord pause={pause1} hideCursorDelay={2500}>
+            Oliver
+            {' '}
+            <span style={{ color: 'yellowgreen' }}>
+              <strong>Oxenham</strong>
+            </span>
+            {' '}
+            was here.
           </TypeWrite>
         </div>
 
-        {/* <div style={{ marginBottom: 10 }}>
-          <TypeWrite pause={pause2}>
+        <div style={{ marginBottom: 10 }}>
+          <TypeWrite wordByWord pause={pause2}>
             <p>
-              Andre-Maurice
-              {" "}
-              <strong><span style={{ color: "red" }}>Oxenham</span></strong>
+              <a href="/">André-Maurice</a>
+              {' '}
+              <strong><span style={{ color: 'red' }}>Oxenham</span></strong>
             </p>
           </TypeWrite>
         </div>
-  
+
         <div style={{ marginBottom: 10 }}>
-          <TypeWrite pause={pause3}>
+          <TypeWrite wordByWord pause={pause3}>
             Simple
-            {" "}
+            {' '}
             <strong>
-              string. <span style={{ color: "green" }}>Booyah! </span>
+              string. <span style={{ color: 'green' }}>Booyah! </span>
             </strong>
             Hello there.
           </TypeWrite>
         </div>
-  
+
         <div style={{ marginBottom: 10 }}>
-          <h3 style={{ color: "orange" }}>
-            <TypeWrite pause={pause4}>
-              <span backspace={0}>Lorem ipsum. </span>
-              <span stamp style={{ color: "hotpink" }}>
+          <h3 style={{ color: 'orange' }}>
+            <TypeWrite wordByWord pause={pause4}>
+              <span>Lorem ipsum. </span>
+              <span style={{ color: 'hotpink' }}>
                 Lorem ipsum dolor sed do eiusmod tempor incididunt.
               </span>
             </TypeWrite>
           </h3>
         </div>
-  
+
         <div style={{ marginBottom: 10, height: 200 }}>
-          <TypeWrite pause={pause5}>
+          <TypeWrite pause={pause5} wordByWord>
             <p>
               Lorem ipsum dolor sit amet,
-              {" "}
+              {' '}
               <strong>consectetur adipisicing elit</strong>
-              , sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris 
-              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in 
-              reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla 
-              pariatur. Excepteur sint occaecat cupidatat non proident, sunt in 
+              , sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              {' '}
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              {' '}
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+              {' '}
+              pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
               culpa qui officia deserunt mollit anim id est laborum.
             </p>
           </TypeWrite>
         </div>
-  
+
         <div>
           <TypeWrite pause={pause5}>
             <div>Hello there! </div>
-            <p style={{ color: "blue" }}>How are you?</p>
+            <p style={{ color: 'blue' }}>How are you?</p>
           </TypeWrite>
-        </div> */}
+        </div>
 
       </div>
     );
   }
 }
 
-ReactDOM.render(<Demo />, document.getElementById("root"));
+ReactDOM.render(<Demo />, document.getElementById('root'));
