@@ -9,6 +9,7 @@ class Typewrite extends Component {
     this.totalWordCount = []; // Number of characters for each word
     this.currentCharIndex = 0; // Points to the current character index
     this.targetCharIndex = 0; // Points to the targeted character index
+    this.startTypingAtIndex = 0;
     this.state = {
       toRender: <span key="0" className="tw">{props.defaultText}</span>
     };
@@ -75,14 +76,12 @@ class Typewrite extends Component {
 
   // Sets the target pointer to its next position
   setNextTargetCharacterIndex() {
-    const { wordByWord } = this.props;
+    const { wordByWord } = this.props, lastInd = this.totalWordCount.length - 1;
+
     if (!wordByWord) {
       this.targetCharIndex++;
     } else {
-      if (
-        this.totalWordCount[this.totalWordCount.length - 1] <=
-        this.currentCharIndex
-      ) {
+      if (this.totalWordCount[lastInd] <= this.currentCharIndex) {
         this.targetCharIndex = this.totalCharCount;
       } else {
         for (const wordLength of this.totalWordCount) {
@@ -272,11 +271,12 @@ class Typewrite extends Component {
 }
 
 Typewrite.defaultProps = {
+  cycle: false,
   pause: false,
   defaultText: '',
   wordByWord: false,
-  minTypingDelay: 50,
-  maxTypingDelay: 80,
+  minTypingDelay: 500,
+  maxTypingDelay: 800,
   hideCursorDelay: -1,
   onTypingDone: () => {
     console.log('Typing done.');
@@ -289,6 +289,7 @@ Typewrite.propTypes = {
     PropTypes.element,
     PropTypes.array
   ]).isRequired,
+  cycle: PropTypes.bool,
   pause: PropTypes.bool,
   wordByWord: PropTypes.bool,
   className: PropTypes.string,

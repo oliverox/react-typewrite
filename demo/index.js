@@ -86,7 +86,7 @@ class Demo extends Component {
         </div>
 
         <div style={{ marginBottom: 10, marginTop: 50 }}>
-          <TypeWrite wordByWord pause={pause1} hideCursorDelay={2500}>
+          <TypeWrite pause={pause1} hideCursorDelay={2500}>
             Oliver
             {' '}
             <span style={{ color: 'yellowgreen' }}>
@@ -94,6 +94,15 @@ class Demo extends Component {
             </span>
             {' '}
             was here.
+          </TypeWrite>
+        </div>
+        
+        {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
+          <TypeWrite cycle eraseStyle="backspace">
+            <span>Word one</span>
+            <span>Word two</span>
+            <span>Word three</span>
+            <span>Word four</span>
           </TypeWrite>
         </div>
 
@@ -153,7 +162,7 @@ class Demo extends Component {
             <div>Hello there! </div>
             <p style={{ color: 'blue' }}>How are you?</p>
           </TypeWrite>
-        </div>
+        </div> */}
 
       </div>
     );
