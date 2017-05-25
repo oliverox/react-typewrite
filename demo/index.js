@@ -86,7 +86,7 @@ class Demo extends Component {
         </div>
 
         <div style={{ marginBottom: 10, marginTop: 50 }}>
-          <TypeWrite pause={pause1} hideCursorDelay={2500}>
+          <TypeWrite cycle pause={pause1} hideCursorDelay={2500}>
             Oliver
             {' '}
             <span style={{ color: 'yellowgreen' }}>

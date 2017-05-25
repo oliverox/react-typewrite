@@ -4,12 +4,7 @@ import PropTypes from 'prop-types';
 class Typewrite extends Component {
   constructor(props) {
     super(props);
-    this.key = 0; // Assign a unique key to each element inside arrays
-    this.totalCharCount = 0; // Total number of characters
-    this.totalWordCount = []; // Number of characters for each word
-    this.currentCharIndex = 0; // Points to the current character index
-    this.targetCharIndex = 0; // Points to the targeted character index
-    this.startTypingAtIndex = 0;
+    this.resetInitialization();
     this.state = {
       toRender: <span key="0" className="tw">{props.defaultText}</span>
     };
@@ -22,46 +17,86 @@ class Typewrite extends Component {
   componentDidMount() {
     const {
       children,
-      className,
       pause,
+      cycle,
       hideCursorDelay,
       onTypingDone
     } = this.props;
 
-    // Set the VDOM tree root
-    this.root = (
-      <span key="0" className={className ? `${className} tw` : `tw`}>
-        {React.Children.toArray(children)}
-      </span>
-    );
+    if (cycle) {
+      const self = this, childrenArr = React.Children.toArray(children);
+      (function loopChildren(index) {
+        console.log('index=', index, childrenArr[index]);
+        self.setVDOMRootTree(childrenArr[index]);
+        self.calculateCharacterCount(self.root);
+        self.setNextTargetCharacterIndex();
+        self.tree = self.buildTree(self.root);
+        new Promise(resolve => {
+          if (childrenArr[index] === ' ') {
+            resolve();
+          } else {
+            self.startTyping(resolve);
+          }
+        }).then(() => {
+          if (index < childrenArr.length - 1) {
+            self.resetInitialization();
+            loopChildren(index + 1);
+          } else {
+            hideCursorDelay > -1 && self.hideCursor();
+            onTypingDone();
+          }
+        });
+      })(0);
+    } else {
+      // Set the VDOM tree root
+      this.setVDOMRootTree(children);
 
-    // Calculate and store character and word counts
-    this.calculateCharacterCount(this.root);
+      // Calculate and store character and word counts
+      this.calculateCharacterCount(this.root);
 
-    // Set pointer to next target character
-    this.setNextTargetCharacterIndex();
+      // Set pointer to next target character
+      this.setNextTargetCharacterIndex();
 
-    this.tree = this.buildTree(this.root);
-    if (!pause) {
-      new Promise((resolve, reject) => {
-        this.startTyping(resolve, reject);
-      }).then(() => {
-        hideCursorDelay > -1 && this.hideCursor();
-        onTypingDone();
-      });
+      this.tree = this.buildTree(this.root);
+      if (!pause) {
+        new Promise((resolve, reject) => {
+          this.startTyping(resolve, reject);
+        }).then(() => {
+          hideCursorDelay > -1 && this.hideCursor();
+          onTypingDone();
+        });
+      }
     }
   }
 
   componentDidUpdate(prevProps) {
-    const { pause, hideCursorDelay, onTypingDone } = this.props;
-    if (prevProps.pause !== pause && !pause) {
-      new Promise((resolve, reject) => {
-        this.startTyping(resolve, reject);
-      }).then(() => {
-        hideCursorDelay > -1 && this.hideCursor();
-        onTypingDone();
-      });
-    }
+    // const { pause, hideCursorDelay, onTypingDone } = this.props;
+    // if (prevProps.pause !== pause && !pause) {
+    //   new Promise((resolve, reject) => {
+    //     this.startTyping(resolve, reject);
+    //   }).then(() => {
+    //     hideCursorDelay > -1 && this.hideCursor();
+    //     onTypingDone();
+    //   });
+    // }
+  }
+  
+  resetInitialization() {
+    this.key = 0; // Assign a unique key to each element inside arrays
+    this.totalCharCount = 0; // Total number of characters
+    this.totalWordCount = []; // Number of characters for each word
+    this.currentCharIndex = 0; // Points to the current character index
+    this.targetCharIndex = 0; // Points to the targeted character index
+    this.startTypingAtIndex = 0;
+  }
+
+  setVDOMRootTree(childrenArr) {
+    const { className } = this.props;
+    this.root = (
+      <span key="0" className={className ? `${className} tw` : `tw`}>
+        {React.Children.toArray(childrenArr)}
+      </span>
+    );
   }
 
   // Returns total number of characters to type
@@ -275,8 +310,8 @@ Typewrite.defaultProps = {
   pause: false,
   defaultText: '',
   wordByWord: false,
-  minTypingDelay: 500,
-  maxTypingDelay: 800,
+  minTypingDelay: 100,
+  maxTypingDelay: 200,
   hideCursorDelay: -1,
   onTypingDone: () => {
     console.log('Typing done.');
