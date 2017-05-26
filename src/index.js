@@ -32,37 +32,46 @@ class Typewrite extends Component {
     this.totalWordCount = []; // Number of characters for each word
     this.currentCharIndex = 0; // Points to the current character index
     this.targetCharIndex = 0; // Points to the targeted character index
-    this.beginTypingAtIndex = 0;
+    this.targetCharIndexBeforeErase = 0;
   }
 
   typeWrite() {
-    const { cycle, children } = this.props;
+    const { cycle, cycleType, children } = this.props;
     if (cycle) {
       const self = this, childrenArr = React.Children.toArray(children);
       (function loopChildren(index) {
         // Setup tree
-        self.prepareChildrenForTyping(childrenArr[index]);
-        
+        self.prepareElementsForTyping(childrenArr[index]);
+
         // Start typing animation for current child
         new Promise(resolve => {
           if (childrenArr[index] === ' ') {
             resolve();
           } else {
-            self.beginTyping(resolve);
+            self.beginTyping(resolve, false);
           }
         }).then(() => {
-          if (index < childrenArr.length - 1) {
-            self.initializeTyping();
-            loopChildren(index + 1);
-          } else {
-            self.endTyping();
-          }
+          new Promise(resolve => {
+            if (cycleType === 'erase') {
+              self.targetCharIndexBeforeErase = self.targetCharIndex;
+              self.beginTyping(resolve, true);
+            } else {
+              resolve();
+            }
+          }).then(() => {
+            if (index < childrenArr.length - 1) {
+              self.initializeTyping();
+              loopChildren(index + 1);
+            } else {
+              self.endTyping();
+            }
+          });
         });
       })(0);
     } else {
       // Setup tree
-      this.prepareChildrenForTyping(children);
-      
+      this.prepareElementsForTyping(children);
+
       // Start typing animation
       new Promise(resolve => {
         this.beginTyping(resolve);
@@ -72,7 +81,7 @@ class Typewrite extends Component {
     }
   }
 
-  prepareChildrenForTyping(children) {
+  prepareElementsForTyping(children) {
     // Set the VDOM tree root
     this.setVDOMRootTree(children);
 
@@ -82,7 +91,7 @@ class Typewrite extends Component {
     // Set pointer to next target character
     this.setNextTargetCharacterIndex();
 
-    // Rebuild tree character by character
+    // Build tree from root element
     this.tree = this.buildTree(this.root);
   }
 
@@ -106,11 +115,11 @@ class Typewrite extends Component {
   }
 
   // Sets the target pointer to its next position
-  setNextTargetCharacterIndex() {
+  setNextTargetCharacterIndex(erasing = false) {
     const { wordByWord } = this.props, lastInd = this.totalWordCount.length - 1;
 
     if (!wordByWord) {
-      this.targetCharIndex++;
+      erasing ? this.targetCharIndex-- : this.targetCharIndex++;
     } else {
       if (this.totalWordCount[lastInd] <= this.currentCharIndex) {
         this.targetCharIndex = this.totalCharCount;
@@ -163,12 +172,16 @@ class Typewrite extends Component {
   }
 
   // Start typing characters
-  beginTyping(mainResolve) {
+  beginTyping(mainResolve, erasing = false) {
     const self = this;
     (function type() {
+      // debugger;
       const charIndex = self.getTargetCharacterIndex();
-      if (charIndex > self.getTotalCharacterCount()) {
-        mainResolve();
+      if (
+        (!erasing && charIndex > self.getTotalCharacterCount()) ||
+        (erasing && charIndex < 0)
+      ) {
+        return mainResolve();
       } else {
         const delay = self.getDelay();
         self.currentCharIndex = 0;
@@ -181,7 +194,11 @@ class Typewrite extends Component {
           }, delay);
         }).then(type);
       }
-      self.setNextTargetCharacterIndex();
+      self.setNextTargetCharacterIndex(erasing);
+      if (self.targetCharIndex < 0) {
+        erasing = false;
+        self.targetCharIndex = self.targetCharIndexBeforeErase + 1;
+      }
     })();
   }
 
@@ -219,8 +236,6 @@ class Typewrite extends Component {
     const self = this,
       currentIndex = self.currentCharIndex,
       targetIndex = self.getTargetCharacterIndex();
-
-    if (currentIndex >= targetIndex) return null;
 
     if (tree.el === 'string') {
       if (currentIndex + tree.children.length < targetIndex) {
@@ -309,6 +324,7 @@ class Typewrite extends Component {
 
 Typewrite.defaultProps = {
   cycle: false,
+  cycleType: 'erase',
   pause: false,
   defaultText: '',
   wordByWord: false,
@@ -327,6 +343,7 @@ Typewrite.propTypes = {
     PropTypes.array
   ]).isRequired,
   cycle: PropTypes.bool,
+  cycleType: PropTypes.oneOf(['erase', 'reset']),
   pause: PropTypes.bool,
   wordByWord: PropTypes.bool,
   className: PropTypes.string,
