@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 class Typewrite extends Component {
   constructor(props) {
     super(props);
-    this.resetInitialization();
+    this.initializeTyping();
     this.state = {
       toRender: <span key="0" className="tw">{props.defaultText}</span>
     };
@@ -15,79 +15,75 @@ class Typewrite extends Component {
   }
 
   componentDidMount() {
-    const {
-      children,
-      pause,
-      cycle,
-      hideCursorDelay,
-      onTypingDone
-    } = this.props;
-
-    if (cycle) {
-      const self = this, childrenArr = React.Children.toArray(children);
-      (function loopChildren(index) {
-        console.log('index=', index, childrenArr[index]);
-        self.setVDOMRootTree(childrenArr[index]);
-        self.calculateCharacterCount(self.root);
-        self.setNextTargetCharacterIndex();
-        self.tree = self.buildTree(self.root);
-        new Promise(resolve => {
-          if (childrenArr[index] === ' ') {
-            resolve();
-          } else {
-            self.startTyping(resolve);
-          }
-        }).then(() => {
-          if (index < childrenArr.length - 1) {
-            self.resetInitialization();
-            loopChildren(index + 1);
-          } else {
-            hideCursorDelay > -1 && self.hideCursor();
-            onTypingDone();
-          }
-        });
-      })(0);
-    } else {
-      // Set the VDOM tree root
-      this.setVDOMRootTree(children);
-
-      // Calculate and store character and word counts
-      this.calculateCharacterCount(this.root);
-
-      // Set pointer to next target character
-      this.setNextTargetCharacterIndex();
-
-      this.tree = this.buildTree(this.root);
-      if (!pause) {
-        new Promise((resolve, reject) => {
-          this.startTyping(resolve, reject);
-        }).then(() => {
-          hideCursorDelay > -1 && this.hideCursor();
-          onTypingDone();
-        });
-      }
+    if (!this.props.pause) {
+      this.typeWrite();
     }
   }
 
   componentDidUpdate(prevProps) {
-    // const { pause, hideCursorDelay, onTypingDone } = this.props;
-    // if (prevProps.pause !== pause && !pause) {
-    //   new Promise((resolve, reject) => {
-    //     this.startTyping(resolve, reject);
-    //   }).then(() => {
-    //     hideCursorDelay > -1 && this.hideCursor();
-    //     onTypingDone();
-    //   });
-    // }
+    if (prevProps.pause !== this.props.pause && !this.props.pause) {
+      this.typeWrite();
+    }
   }
-  
-  resetInitialization() {
+
+  initializeTyping() {
     this.key = 0; // Assign a unique key to each element inside arrays
     this.totalCharCount = 0; // Total number of characters
     this.totalWordCount = []; // Number of characters for each word
     this.currentCharIndex = 0; // Points to the current character index
     this.targetCharIndex = 0; // Points to the targeted character index
-    this.startTypingAtIndex = 0;
+    this.beginTypingAtIndex = 0;
+  }
+
+  typeWrite() {
+    const { cycle, children } = this.props;
+    if (cycle) {
+      const self = this, childrenArr = React.Children.toArray(children);
+      (function loopChildren(index) {
+        // Setup tree
+        self.prepareChildrenForTyping(childrenArr[index]);
+        
+        // Start typing animation for current child
+        new Promise(resolve => {
+          if (childrenArr[index] === ' ') {
+            resolve();
+          } else {
+            self.beginTyping(resolve);
+          }
+        }).then(() => {
+          if (index < childrenArr.length - 1) {
+            self.initializeTyping();
+            loopChildren(index + 1);
+          } else {
+            self.endTyping();
+          }
+        });
+      })(0);
+    } else {
+      // Setup tree
+      this.prepareChildrenForTyping(children);
+      
+      // Start typing animation
+      new Promise(resolve => {
+        this.beginTyping(resolve);
+      }).then(() => {
+        this.endTyping();
+      });
+    }
+  }
+
+  prepareChildrenForTyping(children) {
+    // Set the VDOM tree root
+    this.setVDOMRootTree(children);
+
+    // Calculate and store character and word counts
+    this.calculateCharacterCount(this.root);
+
+    // Set pointer to next target character
+    this.setNextTargetCharacterIndex();
+
+    // Rebuild tree character by character
+    this.tree = this.buildTree(this.root);
   }
 
   setVDOMRootTree(childrenArr) {
@@ -167,7 +163,7 @@ class Typewrite extends Component {
   }
 
   // Start typing characters
-  startTyping(mainResolve, mainReject) {
+  beginTyping(mainResolve) {
     const self = this;
     (function type() {
       const charIndex = self.getTargetCharacterIndex();
@@ -176,7 +172,7 @@ class Typewrite extends Component {
       } else {
         const delay = self.getDelay();
         self.currentCharIndex = 0;
-        new Promise((resolve, reject) => {
+        new Promise(resolve => {
           const newTree = self.duplicateTree(self.tree);
           const toRender = self.generateRenderTree(newTree);
           setTimeout(() => {
@@ -187,6 +183,12 @@ class Typewrite extends Component {
       }
       self.setNextTargetCharacterIndex();
     })();
+  }
+
+  endTyping() {
+    const { hideCursorDelay, onTypingDone } = this.props;
+    hideCursorDelay > -1 && this.hideCursor();
+    onTypingDone();
   }
 
   // Build tree representation of VDOM

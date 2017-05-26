@@ -97,6 +97,18 @@ class Demo extends Component {
           </TypeWrite>
         </div>
         
+        <div style={{ marginBottom: 10, marginTop: 50 }}>
+          <TypeWrite pause={pause1} hideCursorDelay={2500}>
+            Oliver
+            {' '}
+            <span style={{ color: 'orange' }}>
+              <strong>Oxenham</strong>
+            </span>
+            {' '}
+            was here.
+          </TypeWrite>
+        </div>
+        
         {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
           <TypeWrite cycle eraseStyle="backspace">
             <span>Word one</span>
