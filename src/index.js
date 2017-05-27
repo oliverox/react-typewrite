@@ -6,7 +6,7 @@ class Typewrite extends Component {
     super(props);
     this.initializeTyping();
     this.state = {
-      toRender: <span key="0" className="tw">{props.defaultText}</span>
+      toRender: <span key="0" className="tw">{props.defaultElement}</span>
     };
   }
 
@@ -36,9 +36,12 @@ class Typewrite extends Component {
   }
 
   typeWrite() {
-    const { cycle, cycleType, children } = this.props;
+    const { cycle, cycleType, defaultElement, children } = this.props;
     if (cycle) {
       const self = this, childrenArr = React.Children.toArray(children);
+      if (defaultElement !== '') {
+        childrenArr.unshift(defaultElement);
+      }
       (function loopChildren(index) {
         // Setup tree
         self.prepareElementsForTyping(childrenArr[index]);
@@ -171,9 +174,8 @@ class Typewrite extends Component {
 
   // Start typing characters
   beginTyping(mainResolve, erasing = false) {
-    const self = this;
-    (function type() {
-      // debugger;
+    const self = this, { cycleDelay } = this.props;
+    function type() {
       const charIndex = self.getTargetCharacterIndex();
       if (
         (!erasing && charIndex > self.getTotalCharacterCount()) ||
@@ -197,7 +199,14 @@ class Typewrite extends Component {
         erasing = false;
         self.targetCharIndex = self.targetCharIndexBeforeErase + 1;
       }
-    })();
+    };
+    if (erasing && cycleDelay > 0) {
+      setTimeout(() => {
+        type();
+      }, cycleDelay)
+    } else {
+      type();
+    }
   }
 
   endTyping() {
@@ -282,8 +291,8 @@ class Typewrite extends Component {
 
   // Inject styling
   injectStyles() {
-    const style = document.createElement('style');
-    style.innerHTML = `.tw>*{display:inline}.tw:after{position:relative;content:" ";top:-2px;border:1px solid;margin-left:3px;-webkit-animation:1s blink step-end infinite;-moz-animation:1s blink step-end infinite;-ms-animation:1s blink step-end infinite;-o-animation:1s blink step-end infinite;animation:1s blink step-end infinite}@keyframes blink{from,to{color:transparent}50%{color:#000}}@-moz-keyframes blink{from,to{color:transparent}50%{color:#000}}@-webkit-keyframes blink{from,to{color:transparent}50%{color:#000}}@-ms-keyframes "blink"{from,to{color:transparent}50%{color:#000}}@-o-keyframes blink{from,to{color:transparent}50%{color:#000}}.tw.tw-done:after{opacity:0}`;
+    const style = document.createElement('style'), { cursorColor, cursorWidth } = this.props;
+    style.innerHTML = `.tw>*{display:inline}.tw:after{position:relative;content:" ";top:1px;border-right:0;border-left:${cursorWidth} solid;margin-left:3px;-webkit-animation:1s blink step-end infinite;-moz-animation:1s blink step-end infinite;-ms-animation:1s blink step-end infinite;-o-animation:1s blink step-end infinite;animation:1s blink step-end infinite}@keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-moz-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-webkit-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-ms-keyframes "blink"{from,to{color:transparent}50%{color:${cursorColor}}}@-o-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}.tw.tw-done:after{opacity:0}`;
     document.head.appendChild(style);
   }
 
@@ -322,13 +331,16 @@ class Typewrite extends Component {
 
 Typewrite.defaultProps = {
   cycle: false,
+  cycleDelay: 800,
   cycleType: 'erase',
   pause: false,
-  defaultText: '',
+  defaultElement: '',
   wordByWord: false,
-  minTypingDelay: 100,
-  maxTypingDelay: 200,
+  minTypingDelay: 30,
+  maxTypingDelay: 30,
   hideCursorDelay: -1,
+  cursorColor: '#000',
+  cursorWidth: '2px',
   onTypingDone: () => {
     console.log('Typing done.');
   }
@@ -341,15 +353,18 @@ Typewrite.propTypes = {
     PropTypes.array
   ]).isRequired,
   cycle: PropTypes.bool,
+  cycleDelay: PropTypes.number,
   cycleType: PropTypes.oneOf(['erase', 'reset']),
   pause: PropTypes.bool,
   wordByWord: PropTypes.bool,
   className: PropTypes.string,
   onTypingDone: PropTypes.func,
-  defaultText: PropTypes.string,
+  defaultElement: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
   minTypingDelay: PropTypes.number,
   maxTypingDelay: PropTypes.number,
-  hideCursorDelay: PropTypes.number
+  hideCursorDelay: PropTypes.number,
+  cursorColor: PropTypes.string,
+  cursorWidth: PropTypes.string
 };
 
 export default Typewrite;

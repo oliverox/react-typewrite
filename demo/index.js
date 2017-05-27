@@ -86,7 +86,12 @@ class Demo extends Component {
         </div>
 
         <div style={{ marginBottom: 10, marginTop: 50 }}>
-          <TypeWrite cycle cycleType="erase" pause={pause1} hideCursorDelay={2500}>
+          <TypeWrite
+            cycle
+            cycleType="erase"
+            pause={pause1}
+            hideCursorDelay={2500}
+          >
             Oliver
             {' '}
             <span style={{ color: 'yellowgreen' }}>
@@ -110,27 +115,31 @@ class Demo extends Component {
         </div>
 
         <div style={{ marginBottom: 10, marginTop: 50 }}>
-          npm is the package manager for{' '}
-          <TypeWrite cycle pause={pause1} hideCursorDelay={2500}>
-            node.js{' '}
-            browsers{' '}
-            electron{' '}
-            mobile{' '}
-            angular{' '}
-            react{' '}
-            bower{' '}
-            jquery{' '}
-            nodebots{' '}
-            gulp{' '}
-            browserify{' '}
-            grunt{' '}
-            cordova{' '}
-            docpad{' '}
-            tessel{' '}
-            javascript.
-          </TypeWrite>
+          <h1 className="npm">
+            npm is the package manager for{' '}
+            <TypeWrite
+              cycle
+              pause={pause1}
+              cursorColor={'#cb3837'}
+              defaultElement={<span className="what-npm-is-for">node.js</span>}
+            >
+              <span className="what-npm-is-for">browsers</span>
+              <span className="what-npm-is-for">electron</span>
+              <span className="what-npm-is-for">mobile</span>
+              <span className="what-npm-is-for">angular</span>
+              <span className="what-npm-is-for">react</span>
+              <span className="what-npm-is-for">bower</span>
+              <span className="what-npm-is-for">jquery</span>
+              <span className="what-npm-is-for">nodebots</span>
+              <span className="what-npm-is-for">gulp</span>
+              <span className="what-npm-is-for">grunt</span>
+              <span className="what-npm-is-for">cordova</span>
+              <span className="what-npm-is-for">docpad</span>
+              <span className="what-npm-is-for">tessel</span>
+              <span className="what-npm-is-for">javascript.</span>
+            </TypeWrite>
+          </h1>
         </div>
-
 
         {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
           <TypeWrite cycle eraseStyle="backspace">

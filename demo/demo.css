@@ -25,6 +25,17 @@ body {
   font-weight: bold;
 }
 
-.typewrite {
-  /*color: yellowgreen;*/
+.npm {
+  margin: 0;
+  padding: 20px 0 0 0;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  color: #000;
+  opacity: 0.9;
+}
+
+.what-npm-is-for {
+  color: #cb3837;
 }
