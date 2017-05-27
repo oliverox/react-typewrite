@@ -32,7 +32,7 @@ class Typewrite extends Component {
     this.totalWordCount = []; // Number of characters for each word
     this.currentCharIndex = 0; // Points to the current character index
     this.targetCharIndex = 0; // Points to the targeted character index
-    this.targetCharIndexBeforeErase = 0;
+    this.targetCharIndexBeforeErase = 0; // Store the target character index before erasing word
   }
 
   typeWrite() {
@@ -52,7 +52,7 @@ class Typewrite extends Component {
           }
         }).then(() => {
           new Promise(resolve => {
-            if (cycleType === 'erase') {
+            if (cycleType === 'erase' && index < childrenArr.length - 1) {
               self.targetCharIndexBeforeErase = self.targetCharIndex;
               self.beginTyping(resolve, true);
             } else {
@@ -165,10 +165,8 @@ class Typewrite extends Component {
   // Returns a random delay
   getDelay() {
     const { maxTypingDelay, minTypingDelay } = this.props;
-    return (
-      Math.floor(Math.random() * (maxTypingDelay - minTypingDelay + 1)) +
-      minTypingDelay
-    );
+    const maxMinusMin = Math.abs(maxTypingDelay - minTypingDelay);
+    return Math.floor(Math.random() * (maxMinusMin + 1)) + minTypingDelay;
   }
 
   // Start typing characters
