@@ -109,6 +109,29 @@ class Demo extends Component {
           </TypeWrite>
         </div>
 
+        <div style={{ marginBottom: 10, marginTop: 50 }}>
+          npm is the package manager for{' '}
+          <TypeWrite cycle pause={pause1} hideCursorDelay={2500}>
+            node.js{' '}
+            browsers{' '}
+            electron{' '}
+            mobile{' '}
+            angular{' '}
+            react{' '}
+            bower{' '}
+            jquery{' '}
+            nodebots{' '}
+            gulp{' '}
+            browserify{' '}
+            grunt{' '}
+            cordova{' '}
+            docpad{' '}
+            tessel{' '}
+            javascript.
+          </TypeWrite>
+        </div>
+
+
         {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
           <TypeWrite cycle eraseStyle="backspace">
             <span>Word one</span>
