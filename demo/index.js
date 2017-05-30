@@ -103,7 +103,7 @@ class Demo extends Component {
         </div>
 
         <div style={{ marginBottom: 10, marginTop: 50 }}>
-          <TypeWrite pause={pause1} hideCursorDelay={2500}>
+          <TypeWrite pause={pause1} cursorColor={'#000'}>
             Oliver
             {' '}
             <span style={{ color: 'orange' }}>
@@ -123,8 +123,6 @@ class Demo extends Component {
               cursorColor={'#cb3837'}
               defaultElement={<span className="what-npm-is-for">node.js</span>}
             >
-              <span className="what-npm-is-for">browsers</span>
-              <span className="what-npm-is-for">electron</span>
               <span className="what-npm-is-for">mobile</span>
               <span className="what-npm-is-for">angular</span>
               <span className="what-npm-is-for">react</span>
@@ -141,8 +139,8 @@ class Demo extends Component {
           </h1>
         </div>
 
-        {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
-          <TypeWrite cycle eraseStyle="backspace">
+        <div style={{ marginBottom: 10, marginTop: 50 }}>
+          <TypeWrite cycle>
             <span>Word one</span>
             <span>Word two</span>
             <span>Word three</span>
@@ -206,7 +204,7 @@ class Demo extends Component {
             <div>Hello there! </div>
             <p style={{ color: 'blue' }}>How are you?</p>
           </TypeWrite>
-        </div> */}
+        </div>
 
       </div>
     );

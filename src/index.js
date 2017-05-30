@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 class Typewrite extends Component {
   constructor(props) {
     super(props);
-    this.initializeTyping();
+    this.resetCounters();
     this.state = {
       toRender: <span key="0" className="tw">{props.defaultElement}</span>
     };
@@ -16,31 +16,35 @@ class Typewrite extends Component {
 
   componentDidMount() {
     if (!this.props.pause) {
-      this.typeWrite();
+      this.start();
     }
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.pause !== this.props.pause && !this.props.pause) {
-      this.typeWrite();
+      this.start();
     }
   }
 
-  initializeTyping() {
+  resetCounters() {
     this.key = 0; // Assign a unique key to each element inside arrays
     this.totalCharCount = 0; // Total number of characters
     this.totalWordCount = []; // Number of characters for each word
     this.currentCharIndex = 0; // Points to the current character index
     this.targetCharIndex = 0; // Points to the targeted character index
     this.targetCharIndexBeforeErase = 0; // Store the target character index before erasing word
+    this.mode = 1; // 1 => typing, -1 => erasing
   }
 
-  typeWrite() {
+  start() {
     const { cycle, cycleType, defaultElement, children } = this.props;
     if (cycle) {
       const self = this, childrenArr = React.Children.toArray(children);
       if (defaultElement !== '') {
         childrenArr.unshift(defaultElement);
+        this.currentCharIndex = self.calculateCharacterCount(defaultElement);
+        this.targetCharIndex = this.currentCharIndex;
+        this.mode = -1;
       }
       (function loopChildren(index) {
         // Setup tree
@@ -51,24 +55,22 @@ class Typewrite extends Component {
           if (childrenArr[index] === ' ') {
             resolve();
           } else {
-            self.beginTyping(resolve, false);
+            self.beginTyping(resolve);
           }
         }).then(() => {
-          new Promise(resolve => {
-            if (cycleType === 'erase' && index < childrenArr.length - 1) {
-              self.targetCharIndexBeforeErase = self.targetCharIndex;
-              self.beginTyping(resolve, true);
-            } else {
-              resolve();
+          if (index >= childrenArr.length - 1) {
+            self.endTyping();
+          } else {
+            if (cycleType === 'erase') {
+              self.mode = -self.mode;
+              if (self.mode < 0) {
+                loopChildren(index);
+              } else {
+                self.resetCounters();
+                loopChildren(index + 1);
+              }
             }
-          }).then(() => {
-            if (index < childrenArr.length - 1) {
-              self.initializeTyping();
-              loopChildren(index + 1);
-            } else {
-              self.endTyping();
-            }
-          });
+          }
         });
       })(0);
     } else {
@@ -86,10 +88,10 @@ class Typewrite extends Component {
 
   prepareElementsForTyping(children) {
     // Set the VDOM tree root
-    this.setVDOMRootTree(children);
+    this.createVDOMTree(children);
 
     // Calculate and store character and word counts
-    this.calculateCharacterCount(this.root);
+    this.setTotalCharacterCount(this.calculateCharacterCount(this.root));
 
     // Set pointer to next target character
     this.setNextTargetCharacterIndex();
@@ -98,13 +100,18 @@ class Typewrite extends Component {
     this.tree = this.buildTree(this.root);
   }
 
-  setVDOMRootTree(childrenArr) {
+  createVDOMTree(childrenArr) {
     const { className } = this.props;
     this.root = (
       <span key="0" className={className ? `${className} tw` : `tw`}>
         {React.Children.toArray(childrenArr)}
       </span>
     );
+  }
+
+  // Set total character count
+  setTotalCharacterCount(charCount) {
+    this.totalCharCount = charCount;
   }
 
   // Returns total number of characters to type
@@ -118,11 +125,10 @@ class Typewrite extends Component {
   }
 
   // Sets the target pointer to its next position
-  setNextTargetCharacterIndex(erasing = false) {
+  setNextTargetCharacterIndex() {
     const { wordByWord } = this.props, lastInd = this.totalWordCount.length - 1;
-
     if (!wordByWord) {
-      erasing ? this.targetCharIndex-- : this.targetCharIndex++;
+      this.mode < 0 ? this.targetCharIndex-- : this.targetCharIndex++;
     } else {
       if (this.totalWordCount[lastInd] <= this.currentCharIndex) {
         this.targetCharIndex = this.totalCharCount;
@@ -161,7 +167,6 @@ class Typewrite extends Component {
         }
       });
     }
-    this.totalCharCount = charCount;
     return charCount;
   }
 
@@ -173,13 +178,14 @@ class Typewrite extends Component {
   }
 
   // Start typing characters
-  beginTyping(mainResolve, erasing = false) {
+  beginTyping(mainResolve) {
     const self = this, { cycleDelay } = this.props;
-    function type() {
-      const charIndex = self.getTargetCharacterIndex();
+    function typeNextCharacter() {
+      const targetCharIndex = self.getTargetCharacterIndex();
+      // debugger;
       if (
-        (!erasing && charIndex > self.getTotalCharacterCount()) ||
-        (erasing && charIndex < 0)
+        (self.mode > 0 && targetCharIndex > self.getTotalCharacterCount()) ||
+        (self.mode < 0 && targetCharIndex < 0)
       ) {
         return mainResolve();
       } else {
@@ -190,22 +196,18 @@ class Typewrite extends Component {
           const toRender = self.generateRenderTree(newTree);
           setTimeout(() => {
             self.setState({ toRender });
+            self.setNextTargetCharacterIndex();
             resolve();
           }, delay);
-        }).then(type);
+        }).then(typeNextCharacter);
       }
-      self.setNextTargetCharacterIndex(erasing);
-      if (self.targetCharIndex < 0) {
-        erasing = false;
-        self.targetCharIndex = self.targetCharIndexBeforeErase + 1;
-      }
-    };
-    if (erasing && cycleDelay > 0) {
+    }
+    if (this.mode < 0 && cycleDelay > 0) {
       setTimeout(() => {
-        type();
-      }, cycleDelay)
+        typeNextCharacter();
+      }, cycleDelay);
     } else {
-      type();
+      typeNextCharacter();
     }
   }
 
@@ -241,18 +243,17 @@ class Typewrite extends Component {
   // Gradually duplicate the current tree one character / word at a time
   duplicateTree(tree) {
     const self = this,
-      currentIndex = self.currentCharIndex,
-      targetIndex = self.getTargetCharacterIndex();
-
+      currentCharIndex = self.currentCharIndex,
+      targetCharIndex = self.getTargetCharacterIndex();
     if (tree.el === 'string') {
-      if (currentIndex + tree.children.length < targetIndex) {
+      if (currentCharIndex + tree.children.length < targetCharIndex) {
         self.currentCharIndex += tree.children.length;
         return tree;
       } else {
-        self.currentCharIndex = targetIndex;
+        self.currentCharIndex = targetCharIndex;
         return {
           el: tree.el,
-          children: tree.children.slice(0, targetIndex - currentIndex)
+          children: tree.children.slice(0, targetCharIndex - currentCharIndex)
         };
       }
     } else if (tree.el && tree.el !== 'string') {
@@ -291,8 +292,9 @@ class Typewrite extends Component {
 
   // Inject styling
   injectStyles() {
-    const style = document.createElement('style'), { cursorColor, cursorWidth } = this.props;
-    style.innerHTML = `.tw>*{display:inline}.tw:after{position:relative;content:" ";top:1px;border-right:0;border-left:${cursorWidth} solid;margin-left:3px;-webkit-animation:1s blink step-end infinite;-moz-animation:1s blink step-end infinite;-ms-animation:1s blink step-end infinite;-o-animation:1s blink step-end infinite;animation:1s blink step-end infinite}@keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-moz-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-webkit-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-ms-keyframes "blink"{from,to{color:transparent}50%{color:${cursorColor}}}@-o-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}.tw.tw-done:after{opacity:0}`;
+    const style = document.createElement('style'),
+      { cursorColor, cursorWidth } = this.props;
+    style.innerHTML = `.tw>*{display:inline-block}.tw:after{position:relative;content:" ";top:-1px;border-right:0;border-left:${cursorWidth} solid;margin-left:3px;-webkit-animation:1s blink step-end infinite;-moz-animation:1s blink step-end infinite;-ms-animation:1s blink step-end infinite;-o-animation:1s blink step-end infinite;animation:1s blink step-end infinite}@keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-moz-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-webkit-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-ms-keyframes "blink"{from,to{color:transparent}50%{color:${cursorColor}}}@-o-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}.tw.tw-done:after{opacity:0}`;
     document.head.appendChild(style);
   }
 
