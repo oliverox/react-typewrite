@@ -26,7 +26,7 @@ class Demo extends Component {
           });
           resolve();
         }.bind(this),
-        1500
+        2000
       );
     }).then(() => {
       new Promise((resolve, reject) => {
@@ -121,6 +121,12 @@ class Demo extends Component {
               cycle
               pause={pause1}
               cursorColor={'#cb3837'}
+              cursorWidth={2}
+              startTypingDelay={0}
+              eraseDelay={1000}
+              hideCursorDelay={500}
+              minTypingDelay={50}
+              maxTypingDelay={50}
               defaultElement={<span className="what-npm-is-for">node.js</span>}
             >
               <span className="what-npm-is-for">mobile</span>
@@ -139,14 +145,14 @@ class Demo extends Component {
           </h1>
         </div>
 
-        <div style={{ marginBottom: 10, marginTop: 50 }}>
+        {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
           <TypeWrite cycle>
             <span>Word one</span>
             <span>Word two</span>
             <span>Word three</span>
             <span>Word four</span>
           </TypeWrite>
-        </div>
+        </div> */}
 
         {/* <div style={{ marginBottom: 10 }}>
           <TypeWrite wordByWord pause={pause2}>
@@ -180,7 +186,7 @@ class Demo extends Component {
           </h3>
         </div> */}
 
-        <div style={{ marginBottom: 10, height: 200 }}>
+        {/* <div style={{ marginBottom: 10, height: 200 }}>
           <TypeWrite
             pause={pause5}
             wordByWord
@@ -202,7 +208,7 @@ class Demo extends Component {
               culpa qui officia deserunt mollit anim id est laborum.
             </p>
           </TypeWrite>
-        </div>
+        </div> */}
 
         {/*<div>
           <TypeWrite pause={pause5}>
