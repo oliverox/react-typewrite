@@ -5,8 +5,17 @@ class Typewrite extends Component {
   constructor(props) {
     super(props);
     this.resetCounters();
+    this.uniqueClassName =
+      'tw-' +
+      Math.floor(Math.random() * 0x100) +
+      '-' +
+      Math.floor(Math.random() * 0x100);
     this.state = {
-      toRender: <span key="0" className="tw">{props.defaultElement}</span>
+      toRender: (
+        <span key="0" className={this.uniqueClassName}>
+          {props.defaultElement}
+        </span>
+      )
     };
   }
 
@@ -103,7 +112,14 @@ class Typewrite extends Component {
   createVDOMTree(childrenArr) {
     const { className } = this.props;
     this.root = (
-      <span key="0" className={className ? `${className} tw` : `tw`}>
+      <span
+        key="0"
+        className={
+          className
+            ? `${className} ${this.uniqueClassName}`
+            : this.uniqueClassName
+        }
+      >
         {React.Children.toArray(childrenArr)}
       </span>
     );
@@ -179,7 +195,7 @@ class Typewrite extends Component {
 
   // Start typing characters
   beginTyping(mainResolve) {
-    const self = this, { cycleDelay } = this.props;
+    const self = this, { eraseDelay, startTypingDelay } = this.props;
     function typeNextCharacter() {
       const targetCharIndex = self.getTargetCharacterIndex();
       // debugger;
@@ -202,12 +218,22 @@ class Typewrite extends Component {
         }).then(typeNextCharacter);
       }
     }
-    if (this.mode < 0 && cycleDelay > 0) {
-      setTimeout(() => {
+    if (this.mode < 0) {
+      if (eraseDelay > 0) {
+        setTimeout(() => {
+          typeNextCharacter();
+        }, eraseDelay);
+      } else {
         typeNextCharacter();
-      }, cycleDelay);
+      }
     } else {
-      typeNextCharacter();
+      if (startTypingDelay > 0) {
+        setTimeout(() => {
+          typeNextCharacter();
+        }, startTypingDelay);
+      } else {
+        typeNextCharacter();
+      }
     }
   }
 
@@ -294,7 +320,7 @@ class Typewrite extends Component {
   injectStyles() {
     const style = document.createElement('style'),
       { cursorColor, cursorWidth } = this.props;
-    style.innerHTML = `.tw>*{display:inline-block}.tw:after{position:relative;content:" ";top:-1px;border-right:0;border-left:${cursorWidth} solid;margin-left:3px;-webkit-animation:1s blink step-end infinite;-moz-animation:1s blink step-end infinite;-ms-animation:1s blink step-end infinite;-o-animation:1s blink step-end infinite;animation:1s blink step-end infinite}@keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-moz-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-webkit-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}@-ms-keyframes "blink"{from,to{color:transparent}50%{color:${cursorColor}}}@-o-keyframes blink{from,to{color:transparent}50%{color:${cursorColor}}}.tw.tw-done:after{opacity:0}`;
+    style.innerHTML = `.${this.uniqueClassName}>*{display:inline}.${this.uniqueClassName}:after{position:relative;content:" ";top:-1px;border-right:0;border-left:${cursorWidth} solid;margin-left:4px;-webkit-animation:1s blink-${this.uniqueClassName} step-end infinite;-moz-animation:1s blink-${this.uniqueClassName} step-end infinite;-ms-animation:1s blink-${this.uniqueClassName} step-end infinite;-o-animation:1s blink-${this.uniqueClassName} step-end infinite;animation:1s blink-${this.uniqueClassName} step-end infinite}@keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-moz-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-webkit-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-ms-keyframes "blink-${this.uniqueClassName}"{from,to{color:transparent}50%{color:${cursorColor}}}@-o-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}.${this.uniqueClassName}.tw-done:after{opacity:0}`;
     document.head.appendChild(style);
   }
 
@@ -333,7 +359,8 @@ class Typewrite extends Component {
 
 Typewrite.defaultProps = {
   cycle: false,
-  cycleDelay: 800,
+  eraseDelay: 2000,
+  startTypingDelay: 0,
   cycleType: 'erase',
   pause: false,
   defaultElement: '',
@@ -355,7 +382,8 @@ Typewrite.propTypes = {
     PropTypes.array
   ]).isRequired,
   cycle: PropTypes.bool,
-  cycleDelay: PropTypes.number,
+  eraseDelay: PropTypes.number,
+  startTypingDelay: PropTypes.number,
   cycleType: PropTypes.oneOf(['erase', 'reset']),
   pause: PropTypes.bool,
   wordByWord: PropTypes.bool,

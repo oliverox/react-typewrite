@@ -85,7 +85,7 @@ class Demo extends Component {
           <span className="demo-title">Component Demo</span>
         </div>
 
-        <div style={{ marginBottom: 10, marginTop: 50 }}>
+        {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
           <TypeWrite
             cycle
             cycleType="erase"
@@ -100,9 +100,9 @@ class Demo extends Component {
             {' '}
             was here.
           </TypeWrite>
-        </div>
+          </div>
 
-        <div style={{ marginBottom: 10, marginTop: 50 }}>
+          <div style={{ marginBottom: 10, marginTop: 50 }}>
           <TypeWrite pause={pause1} cursorColor={'#000'}>
             Oliver
             {' '}
@@ -112,7 +112,7 @@ class Demo extends Component {
             {' '}
             was here.
           </TypeWrite>
-        </div>
+        </div> */}
 
         <div style={{ marginBottom: 10, marginTop: 50 }}>
           <h1 className="npm">
@@ -148,7 +148,7 @@ class Demo extends Component {
           </TypeWrite>
         </div>
 
-        <div style={{ marginBottom: 10 }}>
+        {/* <div style={{ marginBottom: 10 }}>
           <TypeWrite wordByWord pause={pause2}>
             <p>
               <a href="/">André-Maurice</a>
@@ -156,9 +156,9 @@ class Demo extends Component {
               <strong><span style={{ color: 'red' }}>Oxenham</span></strong>
             </p>
           </TypeWrite>
-        </div>
+          </div>
 
-        <div style={{ marginBottom: 10 }}>
+          <div style={{ marginBottom: 10 }}>
           <TypeWrite wordByWord pause={pause3}>
             Simple
             {' '}
@@ -167,9 +167,9 @@ class Demo extends Component {
             </strong>
             Hello there.
           </TypeWrite>
-        </div>
+          </div>
 
-        <div style={{ marginBottom: 10 }}>
+          <div style={{ marginBottom: 10 }}>
           <h3 style={{ color: 'orange' }}>
             <TypeWrite wordByWord pause={pause4}>
               <span>Lorem ipsum. </span>
@@ -178,10 +178,15 @@ class Demo extends Component {
               </span>
             </TypeWrite>
           </h3>
-        </div>
+        </div> */}
 
         <div style={{ marginBottom: 10, height: 200 }}>
-          <TypeWrite pause={pause5} wordByWord>
+          <TypeWrite
+            pause={pause5}
+            wordByWord
+            minTypingDelay={200}
+            maxTypingDelay={300}
+          >
             <p>
               Lorem ipsum dolor sit amet,
               {' '}
@@ -199,12 +204,12 @@ class Demo extends Component {
           </TypeWrite>
         </div>
 
-        <div>
+        {/*<div>
           <TypeWrite pause={pause5}>
             <div>Hello there! </div>
             <p style={{ color: 'blue' }}>How are you?</p>
           </TypeWrite>
-        </div>
+        </div> */}
 
       </div>
     );
