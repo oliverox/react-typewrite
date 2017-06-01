@@ -38,7 +38,6 @@ class Typewrite extends Component {
   resetCounters() {
     this.key = 0; // Assign a unique key to each element inside arrays
     this.totalCharCount = 0; // Total number of characters
-    this.totalWordCount = []; // Number of characters for each word
     this.currentCharIndex = 0; // Points to the current character index
     this.targetCharIndex = 0; // Points to the targeted character index
     this.targetCharIndexBeforeErase = 0; // Store the target character index before erasing word
@@ -142,41 +141,17 @@ class Typewrite extends Component {
 
   // Sets the target pointer to its next position
   setNextTargetCharacterIndex() {
-    const { wordByWord } = this.props, lastInd = this.totalWordCount.length - 1;
-    if (!wordByWord) {
-      this.mode < 0 ? this.targetCharIndex-- : this.targetCharIndex++;
-    } else {
-      if (this.totalWordCount[lastInd] <= this.currentCharIndex) {
-        this.targetCharIndex = this.totalCharCount;
-      } else {
-        for (const wordLength of this.totalWordCount) {
-          if (wordLength > this.currentCharIndex) {
-            this.targetCharIndex = wordLength;
-            break;
-          }
-        }
-      }
-      if (this.currentCharIndex === this.totalCharCount) {
-        this.targetCharIndex++;
-      }
-    }
+    this.mode < 0 ? this.targetCharIndex-- : this.targetCharIndex++;
   }
 
   // Calculate total characters and words
   calculateCharacterCount(el, charCount = 0) {
     const self = this;
-    let match, re;
     if (el === ' ') {
       charCount++;
     } else {
       React.Children.forEach(el.props.children, child => {
         if (typeof child === 'string') {
-          re = /\s/g;
-          match = re.exec(child);
-          while (match !== null) {
-            self.totalWordCount.push(charCount + match.index + 1);
-            match = re.exec(child);
-          }
           charCount += child.length;
         } else {
           charCount = self.calculateCharacterCount(child, charCount);
@@ -364,7 +339,6 @@ Typewrite.defaultProps = {
   cycleType: 'erase',
   pause: false,
   defaultElement: '',
-  wordByWord: false,
   minTypingDelay: 30,
   maxTypingDelay: 30,
   hideCursorDelay: -1,
@@ -386,7 +360,6 @@ Typewrite.propTypes = {
   startTypingDelay: PropTypes.number,
   cycleType: PropTypes.oneOf(['erase', 'reset']),
   pause: PropTypes.bool,
-  wordByWord: PropTypes.bool,
   className: PropTypes.string,
   onTypingDone: PropTypes.func,
   defaultElement: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),

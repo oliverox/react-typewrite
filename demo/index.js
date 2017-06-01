@@ -116,7 +116,7 @@ class Demo extends Component {
 
         <div style={{ marginBottom: 10, marginTop: 50 }}>
           <h1 className="npm">
-            npm is the package manager for{' '}
+            npm is the package manager for&nbsp;
             <TypeWrite
               cycle
               pause={pause1}
@@ -186,29 +186,29 @@ class Demo extends Component {
           </h3>
         </div> */}
 
-        {/* <div style={{ marginBottom: 10, height: 200 }}>
+        <div style={{ marginBottom: 10, height: 200 }}>
+          <TypeWrite cycle>
+            <span className="what-npm-is-for">mobile</span>
+            <span className="what-npm-is-for">angular</span>
+            <span className="what-npm-is-for">react</span>
+            <span className="what-npm-is-for">bower</span>
+            <span className="what-npm-is-for">jquery</span>
+            <span className="what-npm-is-for">nodebots</span>
+            <span className="what-npm-is-for">gulp</span>
+            <span className="what-npm-is-for">grunt</span>
+            <span className="what-npm-is-for">cordova</span>
+            <span className="what-npm-is-for">docpad</span>
+            <span className="what-npm-is-for">tessel</span>
+            <span className="what-npm-is-for">javascript.</span>
+          </TypeWrite>
           <TypeWrite
-            pause={pause5}
-            wordByWord
+            pause={pause1}
             minTypingDelay={200}
             maxTypingDelay={300}
           >
-            <p>
-              Lorem ipsum dolor sit amet,
-              {' '}
-              <strong>consectetur adipisicing elit</strong>
-              , sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              {' '}
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              {' '}
-              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-              reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-              {' '}
-              pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-              culpa qui officia deserunt mollit anim id est laborum.
-            </p>
+            <p>Lorem ipsum dolor sit amet, <strong>consectetur adipisicing elit</strong>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
           </TypeWrite>
-        </div> */}
+        </div>
 
         {/*<div>
           <TypeWrite pause={pause5}>
