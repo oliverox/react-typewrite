@@ -4,13 +4,18 @@ import PropTypes from 'prop-types';
 class Typewrite extends Component {
   constructor(props) {
     super(props);
-    this.key = 0; // Assign a unique key to each element inside arrays
-    this.totalCharCount = 0; // Total number of characters
-    this.totalWordCount = []; // Number of characters for each word
-    this.currentCharIndex = 0; // Points to the current character index
-    this.targetCharIndex = 0; // Points to the targeted character index
+    this.resetCounters();
+    this.uniqueClassName =
+      'tw-' +
+      Math.floor(Math.random() * 0x100) +
+      '-' +
+      Math.floor(Math.random() * 0x100);
     this.state = {
-      toRender: <span key="0" className="tw">{props.defaultText}</span>
+      toRender: (
+        <span key="0" className={this.uniqueClassName}>
+          {props.defaultElement}
+        </span>
+      )
     };
   }
 
@@ -19,48 +24,109 @@ class Typewrite extends Component {
   }
 
   componentDidMount() {
-    const {
-      children,
-      className,
-      pause,
-      hideCursorDelay,
-      onTypingDone
-    } = this.props;
-
-    // Set the VDOM tree root
-    this.root = (
-      <span key="0" className={className ? `${className} tw` : `tw`}>
-        {React.Children.toArray(children)}
-      </span>
-    );
-
-    // Calculate and store character and word counts
-    this.calculateCharacterCount(this.root);
-
-    // Set pointer to next target character
-    this.setNextTargetCharacterIndex();
-
-    this.tree = this.buildTree(this.root);
-    if (!pause) {
-      new Promise((resolve, reject) => {
-        this.startTyping(resolve, reject);
-      }).then(() => {
-        hideCursorDelay > -1 && this.hideCursor();
-        onTypingDone();
-      });
+    if (!this.props.pause) {
+      this.start();
     }
   }
 
   componentDidUpdate(prevProps) {
-    const { pause, hideCursorDelay, onTypingDone } = this.props;
-    if (prevProps.pause !== pause && !pause) {
-      new Promise((resolve, reject) => {
-        this.startTyping(resolve, reject);
+    if (prevProps.pause !== this.props.pause && !this.props.pause) {
+      this.start();
+    }
+  }
+
+  resetCounters() {
+    this.key = 0; // Assign a unique key to each element inside arrays
+    this.totalCharCount = 0; // Total number of characters
+    this.currentCharIndex = 0; // Points to the current character index
+    this.targetCharIndex = 0; // Points to the targeted character index
+    this.targetCharIndexBeforeErase = 0; // Store the target character index before erasing word
+    this.mode = 1; // 1 => typing, -1 => erasing
+  }
+
+  start() {
+    const { cycle, cycleType, defaultElement, children } = this.props;
+    if (cycle) {
+      const self = this, childrenArr = React.Children.toArray(children);
+      if (defaultElement !== '') {
+        childrenArr.unshift(defaultElement);
+        this.currentCharIndex = self.calculateCharacterCount(defaultElement);
+        this.targetCharIndex = this.currentCharIndex;
+        this.mode = -1;
+      }
+      (function loopChildren(index) {
+        // Setup tree
+        self.prepareElementsForTyping(childrenArr[index]);
+
+        // Start typing animation for current child
+        new Promise(resolve => {
+          if (childrenArr[index] === ' ') {
+            resolve();
+          } else {
+            self.beginTyping(resolve);
+          }
+        }).then(() => {
+          if (index >= childrenArr.length - 1) {
+            self.endTyping();
+          } else {
+            if (cycleType === 'erase') {
+              self.mode = -self.mode;
+              if (self.mode < 0) {
+                loopChildren(index);
+              } else {
+                self.resetCounters();
+                loopChildren(index + 1);
+              }
+            }
+          }
+        });
+      })(0);
+    } else {
+      // Setup tree
+      this.prepareElementsForTyping(children);
+
+      // Start typing animation
+      new Promise(resolve => {
+        this.beginTyping(resolve);
       }).then(() => {
-        hideCursorDelay > -1 && this.hideCursor();
-        onTypingDone();
+        this.endTyping();
       });
     }
+  }
+
+  prepareElementsForTyping(children) {
+    // Set the VDOM tree root
+    this.createVDOMTree(children);
+
+    // Calculate and store character and word counts
+    this.setTotalCharacterCount(this.calculateCharacterCount(this.root));
+
+    // Set pointer to next target character
+    this.setNextTargetCharacterIndex();
+
+    // Build tree from root element
+    this.tree = this.buildTree(this.root);
+  }
+
+  createVDOMTree(childrenArr) {
+    const { className } = this.props;
+    this.root = (
+      <span
+        key="0"
+        className={
+          className
+            ? `${className} ${this.uniqueClassName}`
+            : this.uniqueClassName
+        }
+      >
+        {React.Children.toArray(childrenArr)}
+      </span>
+    );
+  }
+
+  // Set total character count
+  setTotalCharacterCount(charCount) {
+    this.totalCharCount = charCount;
   }
 
   // Returns total number of characters to type
@@ -75,84 +141,81 @@ class Typewrite extends Component {
 
   // Sets the target pointer to its next position
   setNextTargetCharacterIndex() {
-    const { wordByWord } = this.props;
-    if (!wordByWord) {
-      this.targetCharIndex++;
-    } else {
-      if (
-        this.totalWordCount[this.totalWordCount.length - 1] <=
-        this.currentCharIndex
-      ) {
-        this.targetCharIndex = this.totalCharCount;
-      } else {
-        for (const wordLength of this.totalWordCount) {
-          if (wordLength > this.currentCharIndex) {
-            this.targetCharIndex = wordLength;
-            break;
-          }
-        }
-      }
-      if (this.currentCharIndex === this.totalCharCount) {
-        this.targetCharIndex++;
-      }
-    }
+    this.mode < 0 ? this.targetCharIndex-- : this.targetCharIndex++;
   }
 
   // Calculate total characters and words
   calculateCharacterCount(el, charCount = 0) {
     const self = this;
-    let match, re;
     if (el === ' ') {
       charCount++;
     } else {
       React.Children.forEach(el.props.children, child => {
         if (typeof child === 'string') {
-          re = /\s/g;
-          match = re.exec(child);
-          while (match !== null) {
-            self.totalWordCount.push(charCount + match.index + 1);
-            match = re.exec(child);
-          }
           charCount += child.length;
         } else {
           charCount = self.calculateCharacterCount(child, charCount);
         }
       });
     }
-    this.totalCharCount = charCount;
     return charCount;
   }
 
   // Returns a random delay
   getDelay() {
     const { maxTypingDelay, minTypingDelay } = this.props;
-    return (
-      Math.floor(Math.random() * (maxTypingDelay - minTypingDelay + 1)) +
-      minTypingDelay
-    );
+    const maxMinusMin = Math.abs(maxTypingDelay - minTypingDelay);
+    return Math.floor(Math.random() * (maxMinusMin + 1)) + minTypingDelay;
   }
 
   // Start typing characters
-  startTyping(mainResolve, mainReject) {
-    const self = this;
-    (function type() {
-      const charIndex = self.getTargetCharacterIndex();
-      if (charIndex > self.getTotalCharacterCount()) {
-        mainResolve();
+  beginTyping(mainResolve) {
+    const self = this, { eraseDelay, startTypingDelay } = this.props;
+    function typeNextCharacter() {
+      const targetCharIndex = self.getTargetCharacterIndex();
+      // debugger;
+      if (
+        (self.mode > 0 && targetCharIndex > self.getTotalCharacterCount()) ||
+        (self.mode < 0 && targetCharIndex < 0)
+      ) {
+        return mainResolve();
       } else {
         const delay = self.getDelay();
         self.currentCharIndex = 0;
-        new Promise((resolve, reject) => {
+        new Promise(resolve => {
           const newTree = self.duplicateTree(self.tree);
           const toRender = self.generateRenderTree(newTree);
           setTimeout(() => {
             self.setState({ toRender });
+            self.setNextTargetCharacterIndex();
             resolve();
           }, delay);
-        }).then(type);
+        }).then(typeNextCharacter);
       }
-      self.setNextTargetCharacterIndex();
-    })();
+    }
+    if (this.mode < 0) {
+      if (eraseDelay > 0) {
+        setTimeout(() => {
+          typeNextCharacter();
+        }, eraseDelay);
+      } else {
+        typeNextCharacter();
+      }
+    } else {
+      if (startTypingDelay > 0) {
+        setTimeout(() => {
+          typeNextCharacter();
+        }, startTypingDelay);
+      } else {
+        typeNextCharacter();
+      }
+    }
+  }
+
+  endTyping() {
+    const { hideCursorDelay, onTypingDone } = this.props;
+    hideCursorDelay > -1 && this.hideCursor();
+    onTypingDone();
   }
 
   // Build tree representation of VDOM
@@ -181,20 +244,17 @@ class Typewrite extends Component {
   // Gradually duplicate the current tree one character / word at a time
   duplicateTree(tree) {
     const self = this,
-      currentIndex = self.currentCharIndex,
-      targetIndex = self.getTargetCharacterIndex();
-
-    if (currentIndex >= targetIndex) return null;
-
+      currentCharIndex = self.currentCharIndex,
+      targetCharIndex = self.getTargetCharacterIndex();
     if (tree.el === 'string') {
-      if (currentIndex + tree.children.length < targetIndex) {
+      if (currentCharIndex + tree.children.length < targetCharIndex) {
         self.currentCharIndex += tree.children.length;
         return tree;
       } else {
-        self.currentCharIndex = targetIndex;
+        self.currentCharIndex = targetCharIndex;
         return {
           el: tree.el,
-          children: tree.children.slice(0, targetIndex - currentIndex)
+          children: tree.children.slice(0, targetCharIndex - currentCharIndex)
         };
       }
     } else if (tree.el && tree.el !== 'string') {
@@ -233,8 +293,9 @@ class Typewrite extends Component {
 
   // Inject styling
   injectStyles() {
-    const style = document.createElement('style');
-    style.innerHTML = `.tw>*{display:inline}.tw:after{position:relative;content:" ";top:-2px;border:1px solid;margin-left:3px;-webkit-animation:1s blink step-end infinite;-moz-animation:1s blink step-end infinite;-ms-animation:1s blink step-end infinite;-o-animation:1s blink step-end infinite;animation:1s blink step-end infinite}@keyframes blink{from,to{color:transparent}50%{color:#000}}@-moz-keyframes blink{from,to{color:transparent}50%{color:#000}}@-webkit-keyframes blink{from,to{color:transparent}50%{color:#000}}@-ms-keyframes "blink"{from,to{color:transparent}50%{color:#000}}@-o-keyframes blink{from,to{color:transparent}50%{color:#000}}.tw.tw-done:after{opacity:0}`;
+    const style = document.createElement('style'),
+      { cursorColor, cursorWidth } = this.props;
+    style.innerHTML = `.${this.uniqueClassName}>*{display:inline}.${this.uniqueClassName}:after{position:relative;content:" ";top:-1px;border-right:0;border-left:${cursorWidth}px solid;margin-left:5px;-webkit-animation:1s blink-${this.uniqueClassName} step-end infinite;-moz-animation:1s blink-${this.uniqueClassName} step-end infinite;-ms-animation:1s blink-${this.uniqueClassName} step-end infinite;-o-animation:1s blink-${this.uniqueClassName} step-end infinite;animation:1s blink-${this.uniqueClassName} step-end infinite}@keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-moz-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-webkit-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-ms-keyframes "blink-${this.uniqueClassName}"{from,to{color:transparent}50%{color:${cursorColor}}}@-o-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}.${this.uniqueClassName}.tw-done:after{opacity:0}`;
     document.head.appendChild(style);
   }
 
@@ -272,12 +333,17 @@ class Typewrite extends Component {
 }
 
 Typewrite.defaultProps = {
+  cycle: false,
+  eraseDelay: 2000,
+  startTypingDelay: 0,
+  cycleType: 'erase',
   pause: false,
-  defaultText: '',
-  wordByWord: false,
-  minTypingDelay: 50,
-  maxTypingDelay: 80,
+  defaultElement: '',
+  minTypingDelay: 30,
+  maxTypingDelay: 30,
   hideCursorDelay: -1,
+  cursorColor: '#000',
+  cursorWidth: 2,
   onTypingDone: () => {
     console.log('Typing done.');
   }
@@ -289,14 +355,19 @@ Typewrite.propTypes = {
     PropTypes.element,
     PropTypes.array
   ]).isRequired,
+  cycle: PropTypes.bool,
+  eraseDelay: PropTypes.number,
+  startTypingDelay: PropTypes.number,
+  cycleType: PropTypes.oneOf(['erase', 'reset']),
   pause: PropTypes.bool,
-  wordByWord: PropTypes.bool,
   className: PropTypes.string,
   onTypingDone: PropTypes.func,
-  defaultText: PropTypes.string,
+  defaultElement: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
   minTypingDelay: PropTypes.number,
   maxTypingDelay: PropTypes.number,
-  hideCursorDelay: PropTypes.number
+  hideCursorDelay: PropTypes.number,
+  cursorColor: PropTypes.string,
+  cursorWidth: PropTypes.number
 };
 
 export default Typewrite;

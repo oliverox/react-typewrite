@@ -26,7 +26,7 @@ class Demo extends Component {
           });
           resolve();
         }.bind(this),
-        1500
+        2000
       );
     }).then(() => {
       new Promise((resolve, reject) => {
@@ -85,8 +85,13 @@ class Demo extends Component {
           <span className="demo-title">Component Demo</span>
         </div>
 
-        <div style={{ marginBottom: 10, marginTop: 50 }}>
-          <TypeWrite wordByWord pause={pause1} hideCursorDelay={2500}>
+        {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
+          <TypeWrite
+            cycle
+            cycleType="erase"
+            pause={pause1}
+            hideCursorDelay={2500}
+          >
             Oliver
             {' '}
             <span style={{ color: 'yellowgreen' }}>
@@ -95,9 +100,61 @@ class Demo extends Component {
             {' '}
             was here.
           </TypeWrite>
+          </div>
+
+          <div style={{ marginBottom: 10, marginTop: 50 }}>
+          <TypeWrite pause={pause1} cursorColor={'#000'}>
+            Oliver
+            {' '}
+            <span style={{ color: 'orange' }}>
+              <strong>Oxenham</strong>
+            </span>
+            {' '}
+            was here.
+          </TypeWrite>
+        </div> */}
+
+        <div style={{ marginBottom: 10, marginTop: 50 }}>
+          <h1 className="npm">
+            npm is the package manager for&nbsp;
+            <TypeWrite
+              cycle
+              pause={pause1}
+              cursorColor={'#cb3837'}
+              cursorWidth={2}
+              startTypingDelay={0}
+              eraseDelay={1000}
+              hideCursorDelay={500}
+              minTypingDelay={50}
+              maxTypingDelay={50}
+              defaultElement={<span className="what-npm-is-for">node.js</span>}
+            >
+              <span className="what-npm-is-for">mobile</span>
+              <span className="what-npm-is-for">angular</span>
+              <span className="what-npm-is-for">react</span>
+              <span className="what-npm-is-for">bower</span>
+              <span className="what-npm-is-for">jquery</span>
+              <span className="what-npm-is-for">nodebots</span>
+              <span className="what-npm-is-for">gulp</span>
+              <span className="what-npm-is-for">grunt</span>
+              <span className="what-npm-is-for">cordova</span>
+              <span className="what-npm-is-for">docpad</span>
+              <span className="what-npm-is-for">tessel</span>
+              <span className="what-npm-is-for">javascript.</span>
+            </TypeWrite>
+          </h1>
         </div>
 
-        <div style={{ marginBottom: 10 }}>
+        {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
+          <TypeWrite cycle>
+            <span>Word one</span>
+            <span>Word two</span>
+            <span>Word three</span>
+            <span>Word four</span>
+          </TypeWrite>
+        </div> */}
+
+        {/* <div style={{ marginBottom: 10 }}>
           <TypeWrite wordByWord pause={pause2}>
             <p>
               <a href="/">André-Maurice</a>
@@ -105,9 +162,9 @@ class Demo extends Component {
               <strong><span style={{ color: 'red' }}>Oxenham</span></strong>
             </p>
           </TypeWrite>
-        </div>
+          </div>
 
-        <div style={{ marginBottom: 10 }}>
+          <div style={{ marginBottom: 10 }}>
           <TypeWrite wordByWord pause={pause3}>
             Simple
             {' '}
@@ -116,9 +173,9 @@ class Demo extends Component {
             </strong>
             Hello there.
           </TypeWrite>
-        </div>
+          </div>
 
-        <div style={{ marginBottom: 10 }}>
+          <div style={{ marginBottom: 10 }}>
           <h3 style={{ color: 'orange' }}>
             <TypeWrite wordByWord pause={pause4}>
               <span>Lorem ipsum. </span>
@@ -127,33 +184,38 @@ class Demo extends Component {
               </span>
             </TypeWrite>
           </h3>
-        </div>
+        </div> */}
 
         <div style={{ marginBottom: 10, height: 200 }}>
-          <TypeWrite pause={pause5} wordByWord>
-            <p>
-              Lorem ipsum dolor sit amet,
-              {' '}
-              <strong>consectetur adipisicing elit</strong>
-              , sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              {' '}
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              {' '}
-              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-              reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-              {' '}
-              pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-              culpa qui officia deserunt mollit anim id est laborum.
-            </p>
+          <TypeWrite cycle>
+            <span className="what-npm-is-for">mobile</span>
+            <span className="what-npm-is-for">angular</span>
+            <span className="what-npm-is-for">react</span>
+            <span className="what-npm-is-for">bower</span>
+            <span className="what-npm-is-for">jquery</span>
+            <span className="what-npm-is-for">nodebots</span>
+            <span className="what-npm-is-for">gulp</span>
+            <span className="what-npm-is-for">grunt</span>
+            <span className="what-npm-is-for">cordova</span>
+            <span className="what-npm-is-for">docpad</span>
+            <span className="what-npm-is-for">tessel</span>
+            <span className="what-npm-is-for">javascript.</span>
+          </TypeWrite>
+          <TypeWrite
+            pause={pause1}
+            minTypingDelay={200}
+            maxTypingDelay={300}
+          >
+            <p>Lorem ipsum dolor sit amet, <strong>consectetur adipisicing elit</strong>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
           </TypeWrite>
         </div>
 
-        <div>
+        {/*<div>
           <TypeWrite pause={pause5}>
             <div>Hello there! </div>
             <p style={{ color: 'blue' }}>How are you?</p>
           </TypeWrite>
-        </div>
+        </div> */}
 
       </div>
     );
