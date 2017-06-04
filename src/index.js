@@ -103,17 +103,6 @@ class Typewrite extends Component {
       }
       this.end();
     }
-    // } else {
-    //   // Setup tree
-    //   this.prepareElementsForTyping(children);
-    // 
-    //   // Start typing animation
-    //   new Promise(resolve => {
-    //     this.typeWrite(resolve);
-    //   }).then(() => {
-    //     this.end();
-    //   });
-    // }
   }
 
   prepareElementsForTyping(children) {
