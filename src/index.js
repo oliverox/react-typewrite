@@ -44,54 +44,76 @@ class Typewrite extends Component {
     this.mode = 1; // 1 => typing, -1 => erasing
   }
 
-  start() {
-    const { cycle, cycleType, defaultElement, children } = this.props;
-    if (cycle) {
-      const self = this, childrenArr = React.Children.toArray(children);
-      if (defaultElement !== '') {
-        childrenArr.unshift(defaultElement);
-        this.currentCharIndex = self.calculateCharacterCount(defaultElement);
-        this.targetCharIndex = this.currentCharIndex;
-        this.mode = -1;
-      }
-      (function loopChildren(index) {
-        // Setup tree
-        self.prepareElementsForTyping(childrenArr[index]);
+  async start() {
+    const { cycle, cycleType, defaultElement, children } = this.props,
+      childrenArr = React.Children.toArray(children),
+      childrenArrLength = childrenArr.length;
+      
+    if (defaultElement !== '') {
+      childrenArr.unshift(defaultElement);
+      this.currentCharIndex = this.calculateCharacterCount(defaultElement);
+      this.targetCharIndex = this.currentCharIndex;
+      this.mode = -1;
+    }
 
-        // Start typing animation for current child
-        new Promise(resolve => {
-          if (childrenArr[index] === ' ') {
-            resolve();
-          } else {
-            self.beginTyping(resolve);
-          }
-        }).then(() => {
-          if (index >= childrenArr.length - 1) {
-            self.endTyping();
-          } else {
-            if (cycleType === 'erase') {
-              self.mode = -self.mode;
-              if (self.mode < 0) {
-                loopChildren(index);
-              } else {
-                self.resetCounters();
-                loopChildren(index + 1);
-              }
-            }
-          }
-        });
-      })(0);
-    } else {
+    const loopChildren = index => {
+      const child = childrenArr[index];
       // Setup tree
-      this.prepareElementsForTyping(children);
+      this.prepareElementsForTyping(child);
 
+      // Start typing animation for current child
+      return new Promise(resolve => {
+        if (child === ' ') {
+          resolve();
+        } else {
+          this.typeWrite(resolve);
+        }
+      });
+    };
+    
+    if (!cycle) {
+      this.prepareElementsForTyping(childrenArr);
+    
       // Start typing animation
       new Promise(resolve => {
-        this.beginTyping(resolve);
+        this.typeWrite(resolve);
       }).then(() => {
-        this.endTyping();
+        this.end();
       });
+    } else {
+      let index = 0;
+      while (index <= childrenArrLength) {
+        // debugger;
+        await loopChildren(index);
+        if (cycleType === 'erase') {
+          this.mode = -this.mode;
+          if (this.mode > 0) {
+            debugger;
+            this.resetCounters();
+            index++;
+          } else {
+            if (index === childrenArrLength) {
+              // Force out of while loop so as not to erase last word
+              index++;
+            }
+          }
+        } else {
+          index++;
+        }
+      }
+      this.end();
     }
+    // } else {
+    //   // Setup tree
+    //   this.prepareElementsForTyping(children);
+    // 
+    //   // Start typing animation
+    //   new Promise(resolve => {
+    //     this.typeWrite(resolve);
+    //   }).then(() => {
+    //     this.end();
+    //   });
+    // }
   }
 
   prepareElementsForTyping(children) {
@@ -168,51 +190,59 @@ class Typewrite extends Component {
     return Math.floor(Math.random() * (maxMinusMin + 1)) + minTypingDelay;
   }
 
-  // Start typing characters
-  beginTyping(mainResolve) {
-    const self = this, { eraseDelay, startTypingDelay } = this.props;
-    function typeNextCharacter() {
-      const targetCharIndex = self.getTargetCharacterIndex();
-      // debugger;
+  renderNextCharacter() {
+    const self = this;
+    this.currentCharIndex = 0;
+    return new Promise(resolve => {
+      const newTree = self.duplicateTree(self.tree),
+        toRender = self.generateRenderTree(newTree);
+      setTimeout(() => {
+        self.setState({ toRender });
+        self.setNextTargetCharacterIndex();
+        resolve();
+      }, self.getDelay());
+    });
+  }
+
+  characterTyped(mainResolve) {
+    const targetCharIndex = this.getTargetCharacterIndex(),
+      totalCharCount = this.getTotalCharacterCount();
+    return () => {
       if (
-        (self.mode > 0 && targetCharIndex > self.getTotalCharacterCount()) ||
-        (self.mode < 0 && targetCharIndex < 0)
+        (this.mode > 0 && targetCharIndex > totalCharCount) ||
+        (this.mode < 0 && targetCharIndex <= 0)
       ) {
         return mainResolve();
       } else {
-        const delay = self.getDelay();
-        self.currentCharIndex = 0;
-        new Promise(resolve => {
-          const newTree = self.duplicateTree(self.tree);
-          const toRender = self.generateRenderTree(newTree);
-          setTimeout(() => {
-            self.setState({ toRender });
-            self.setNextTargetCharacterIndex();
-            resolve();
-          }, delay);
-        }).then(typeNextCharacter);
+        this.typeWrite(mainResolve);
       }
-    }
+    };
+  }
+
+  typeWrite(mainResolve) {
+    const self = this,
+      { eraseDelay, startTypingDelay } = this.props;
+
     if (this.mode < 0) {
       if (eraseDelay > 0) {
         setTimeout(() => {
-          typeNextCharacter();
+          self.renderNextCharacter().then(self.characterTyped(mainResolve));
         }, eraseDelay);
       } else {
-        typeNextCharacter();
+        self.renderNextCharacter().then(self.characterTyped(mainResolve));
       }
     } else {
       if (startTypingDelay > 0) {
         setTimeout(() => {
-          typeNextCharacter();
+          self.renderNextCharacter().then(self.characterTyped(mainResolve));
         }, startTypingDelay);
       } else {
-        typeNextCharacter();
+        self.renderNextCharacter().then(self.characterTyped(mainResolve));
       }
     }
   }
 
-  endTyping() {
+  end() {
     const { hideCursorDelay, onTypingDone } = this.props;
     hideCursorDelay > -1 && this.hideCursor();
     onTypingDone();
@@ -294,8 +324,10 @@ class Typewrite extends Component {
   // Inject styling
   injectStyles() {
     const style = document.createElement('style'),
+      cn = this.uniqueClassName,
       { cursorColor, cursorWidth } = this.props;
-    style.innerHTML = `.${this.uniqueClassName}>*{display:inline}.${this.uniqueClassName}:after{position:relative;content:" ";top:-1px;border-right:0;border-left:${cursorWidth}px solid;margin-left:5px;-webkit-animation:1s blink-${this.uniqueClassName} step-end infinite;-moz-animation:1s blink-${this.uniqueClassName} step-end infinite;-ms-animation:1s blink-${this.uniqueClassName} step-end infinite;-o-animation:1s blink-${this.uniqueClassName} step-end infinite;animation:1s blink-${this.uniqueClassName} step-end infinite}@keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-moz-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-webkit-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-ms-keyframes "blink-${this.uniqueClassName}"{from,to{color:transparent}50%{color:${cursorColor}}}@-o-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}.${this.uniqueClassName}.tw-done:after{opacity:0}`;
+    style.innerHTML = `.${cn}>*{display:inline}.${cn}:after{position:relative;content:" ";top:-1px;border-right:0;
+      border-left:${cursorWidth}px solid;margin-left:5px;-webkit-animation:1s blink-${cn} step-end infinite;-moz-animation:1s blink-${cn} step-end infinite;-ms-animation:1s blink-${cn} step-end infinite;-o-animation:1s blink-${cn} step-end infinite;animation:1s blink-${cn} step-end infinite}@keyframes blink-${cn}{from,to{color:transparent}50%{color:${cursorColor}}}@-moz-keyframes blink-${cn}{from,to{color:transparent}50%{color:${cursorColor}}}@-webkit-keyframes blink-${cn}{from,to{color:transparent}50%{color:${cursorColor}}}@-ms-keyframes "blink-${cn}"{from,to{color:transparent}50%{color:${cursorColor}}}@-o-keyframes blink-${cn}{from,to{color:transparent}50%{color:${cursorColor}}}.${cn}.tw-done:after{opacity:0}`;
     document.head.appendChild(style);
   }
 

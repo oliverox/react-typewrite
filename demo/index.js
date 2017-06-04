@@ -100,10 +100,14 @@ class Demo extends Component {
             {' '}
             was here.
           </TypeWrite>
-          </div>
+        </div> */}
 
-          <div style={{ marginBottom: 10, marginTop: 50 }}>
-          <TypeWrite pause={pause1} cursorColor={'#000'}>
+        <div style={{ marginBottom: 10, marginTop: 50 }}>
+          <TypeWrite 
+            cursorColor={'#000'}
+            minTypingDelay={50}
+            maxTypingDelay={50}
+          >
             Oliver
             {' '}
             <span style={{ color: 'orange' }}>
@@ -112,9 +116,9 @@ class Demo extends Component {
             {' '}
             was here.
           </TypeWrite>
-        </div> */}
+        </div>
 
-        <div style={{ marginBottom: 10, marginTop: 50 }}>
+        {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
           <h1 className="npm">
             npm is the package manager for&nbsp;
             <TypeWrite
@@ -123,8 +127,8 @@ class Demo extends Component {
               cursorColor={'#cb3837'}
               cursorWidth={2}
               startTypingDelay={0}
-              eraseDelay={1000}
-              hideCursorDelay={500}
+              eraseDelay={50}
+              // hideCursorDelay={500}
               minTypingDelay={50}
               maxTypingDelay={50}
               defaultElement={<span className="what-npm-is-for">node.js</span>}
@@ -143,7 +147,7 @@ class Demo extends Component {
               <span className="what-npm-is-for">javascript.</span>
             </TypeWrite>
           </h1>
-        </div>
+        </div> */}
 
         {/* <div style={{ marginBottom: 10, marginTop: 50 }}>
           <TypeWrite cycle>
@@ -186,7 +190,7 @@ class Demo extends Component {
           </h3>
         </div> */}
 
-        <div style={{ marginBottom: 10, height: 200 }}>
+        {/* <div style={{ marginBottom: 10, height: 200 }}>
           <TypeWrite cycle>
             <span className="what-npm-is-for">mobile</span>
             <span className="what-npm-is-for">angular</span>
@@ -208,7 +212,7 @@ class Demo extends Component {
           >
             <p>Lorem ipsum dolor sit amet, <strong>consectetur adipisicing elit</strong>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
           </TypeWrite>
-        </div>
+        </div> */}
 
         {/*<div>
           <TypeWrite pause={pause5}>
