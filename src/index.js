@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+const ERASE = -1,
+  TYPE = 1;
+
 class Typewrite extends Component {
   constructor(props) {
     super(props);
@@ -41,7 +44,7 @@ class Typewrite extends Component {
     this.currentCharIndex = 0; // Points to the current character index
     this.targetCharIndex = 0; // Points to the targeted character index
     this.targetCharIndexBeforeErase = 0; // Store the target character index before erasing word
-    this.mode = 1; // 1 => typing, -1 => erasing
+    this.mode = TYPE; // 1 => typing, -1 => erasing
   }
 
   start() {
@@ -52,7 +55,7 @@ class Typewrite extends Component {
         childrenArr.unshift(defaultElement);
         this.currentCharIndex = self.calculateCharacterCount(defaultElement);
         this.targetCharIndex = this.currentCharIndex;
-        this.mode = -1;
+        this.mode = ERASE;
       }
       (function loopChildren(index) {
         // Setup tree
@@ -71,7 +74,7 @@ class Typewrite extends Component {
           } else {
             if (cycleType === 'erase') {
               self.mode = -self.mode;
-              if (self.mode < 0) {
+              if (self.mode === ERASE) {
                 loopChildren(index);
               } else {
                 self.resetCounters();
@@ -141,7 +144,7 @@ class Typewrite extends Component {
 
   // Sets the target pointer to its next position
   setNextTargetCharacterIndex() {
-    this.mode < 0 ? this.targetCharIndex-- : this.targetCharIndex++;
+    this.mode === ERASE ? this.targetCharIndex-- : this.targetCharIndex++;
   }
 
   // Calculate total characters and words
@@ -175,8 +178,8 @@ class Typewrite extends Component {
       const targetCharIndex = self.getTargetCharacterIndex();
       // debugger;
       if (
-        (self.mode > 0 && targetCharIndex > self.getTotalCharacterCount()) ||
-        (self.mode < 0 && targetCharIndex < 0)
+        (self.mode === TYPE && targetCharIndex > self.getTotalCharacterCount()) ||
+        (self.mode === ERASE && targetCharIndex < 0)
       ) {
         return mainResolve();
       } else {
@@ -193,7 +196,7 @@ class Typewrite extends Component {
         }).then(typeNextCharacter);
       }
     }
-    if (this.mode < 0) {
+    if (this.mode === ERASE) {
       if (eraseDelay > 0) {
         setTimeout(() => {
           typeNextCharacter();
