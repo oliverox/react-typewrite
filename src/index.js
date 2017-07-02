@@ -41,6 +41,9 @@ const buildTree = (el, key = 0) => {
 }
 
 
+const ERASE = -1,
+  TYPE = 1;
+
 class Typewrite extends Component {
   constructor(props) {
     super(props);
