@@ -7,12 +7,15 @@
     "react-dom": "^15.5.4"
   },
   "devDependencies": {
-    "@reactmarket/component-generator": "0.0.14"
+    "@reactmarket/component-generator": "0.0.14",
+    "@storybook/react": "^3.1.7"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   }
 }

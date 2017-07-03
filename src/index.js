@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-const TYPING = 1, ERASING = -1;
+const TYPE = 1, ERASE = -1;
 
 // Calculate total characters and words
 const calculateCharacterCount = (el, charCount = 0) => {
@@ -40,22 +40,18 @@ const buildTree = (el, key = 0) => {
   }
 }
 
-
-const ERASE = -1,
-  TYPE = 1;
-
 class Typewrite extends Component {
   constructor(props) {
     super(props);
     this.resetCounters();
-    this.uniqueClassName =
+    this.ucn =
       'tw-' +
       Math.floor(Math.random() * 0x100) +
       '-' +
       Math.floor(Math.random() * 0x100);
     this.state = {
       toRender: (
-        <span key="0" className={this.uniqueClassName}>
+        <span key="0" className={this.ucn}>
           {props.defaultElement}
         </span>
       )
@@ -84,7 +80,7 @@ class Typewrite extends Component {
     this.currentCharIndex = 0; // Points to the current character index
     this.targetCharIndex = 0; // Points to the targeted character index
     this.targetCharIndexBeforeErase = 0; // Store the target character index before erasing word
-    this.mode = TYPING; // 1 => typing, -1 => erasing
+    this.mode = TYPE;
   }
 
   start() {
@@ -95,7 +91,7 @@ class Typewrite extends Component {
         childrenArr.unshift(defaultElement);
         this.currentCharIndex = calculateCharacterCount(defaultElement);
         this.targetCharIndex = this.currentCharIndex;
-        this.mode = ERASING;
+        this.mode = ERASE;
       }
       (function loopChildren(index) {
         // Setup tree
@@ -108,7 +104,7 @@ class Typewrite extends Component {
           } else {
             if (cycleType === 'erase') {
               self.mode = -self.mode;
-              if (self.mode === ERASING) {
+              if (self.mode === ERASE) {
                 loopChildren(index);
               } else {
                 self.resetCounters();
@@ -148,8 +144,8 @@ class Typewrite extends Component {
         key="0"
         className={
           className
-            ? `${className} ${this.uniqueClassName}`
-            : this.uniqueClassName
+            ? `${className} ${this.ucn}`
+            : this.ucn
         }
       >
         {React.Children.toArray(childrenArr)}
@@ -174,7 +170,7 @@ class Typewrite extends Component {
 
   // Sets the target pointer to its next position
   setNextTargetCharacterIndex() {
-    this.mode === ERASING ? this.targetCharIndex-- : this.targetCharIndex++;
+    this.mode === ERASE ? this.targetCharIndex-- : this.targetCharIndex++;
   }
 
   typeNextCharacter(mainResolve) {
@@ -182,8 +178,8 @@ class Typewrite extends Component {
       const self = this;
       const targetCharIndex = self.getTargetCharacterIndex();
       if (
-        (self.mode === TYPING && targetCharIndex > self.getTotalCharacterCount()) ||
-        (self.mode === ERASING && targetCharIndex < 0)
+        (self.mode === TYPE && targetCharIndex > self.getTotalCharacterCount()) ||
+        (self.mode === ERASE && targetCharIndex < 0)
       ) {
         return mainResolve();
       } else {
@@ -205,7 +201,7 @@ class Typewrite extends Component {
   typeWrite() {
     const self = this, { eraseDelay, startTypingDelay } = this.props;
     return new Promise(resolve => {
-      if (this.mode === ERASING) {
+      if (this.mode === ERASE) {
         if (eraseDelay > 0) {
           setTimeout(self.typeNextCharacter(resolve), eraseDelay);
         } else {
@@ -281,7 +277,7 @@ class Typewrite extends Component {
   injectStyles() {
     const style = document.createElement('style'),
       { cursorColor, cursorWidth } = this.props;
-    style.innerHTML = `.${this.uniqueClassName}>*{display:inline}.${this.uniqueClassName}:after{position:relative;content:" ";top:-1px;border-right:0;border-left:${cursorWidth}px solid;margin-left:5px;-webkit-animation:1s blink-${this.uniqueClassName} step-end infinite;-moz-animation:1s blink-${this.uniqueClassName} step-end infinite;-ms-animation:1s blink-${this.uniqueClassName} step-end infinite;-o-animation:1s blink-${this.uniqueClassName} step-end infinite;animation:1s blink-${this.uniqueClassName} step-end infinite}@keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-moz-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-webkit-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}@-ms-keyframes "blink-${this.uniqueClassName}"{from,to{color:transparent}50%{color:${cursorColor}}}@-o-keyframes blink-${this.uniqueClassName}{from,to{color:transparent}50%{color:${cursorColor}}}.${this.uniqueClassName}.tw-done:after{opacity:0}`;
+    style.innerHTML = `.${this.ucn}>*{display:inline}.${this.ucn}:after{position:relative;content:" ";top:-1px;border-right:0;border-left:${cursorWidth}px solid;margin-left:5px;-webkit-animation:1s blink-${this.ucn} step-end infinite;-moz-animation:1s blink-${this.ucn} step-end infinite;-ms-animation:1s blink-${this.ucn} step-end infinite;-o-animation:1s blink-${this.ucn} step-end infinite;animation:1s blink-${this.ucn} step-end infinite}@keyframes blink-${this.ucn}{from,to{color:transparent}50%{color:${cursorColor}}}@-moz-keyframes blink-${this.ucn}{from,to{color:transparent}50%{color:${cursorColor}}}@-webkit-keyframes blink-${this.ucn}{from,to{color:transparent}50%{color:${cursorColor}}}@-ms-keyframes "blink-${this.ucn}"{from,to{color:transparent}50%{color:${cursorColor}}}@-o-keyframes blink-${this.ucn}{from,to{color:transparent}50%{color:${cursorColor}}}.${this.ucn}.tw-done:after{opacity:0}`;
     document.head.appendChild(style);
   }
 
@@ -324,33 +320,31 @@ Typewrite.defaultProps = {
   cycleType: 'erase',
   pause: false,
   defaultElement: '',
-  typingDelay: 30,
+  typingDelay: 45,
   hideCursorDelay: -1,
   cursorColor: '#000',
   cursorWidth: 2,
-  onTypingDone: () => {
-    console.log('Typing done.');
-  }
+  onTypingDone: () => {}
 };
 
-// Typewrite.propTypes = {
-//   children: PropTypes.oneOfType([
-//     PropTypes.string,
-//     PropTypes.element,
-//     PropTypes.array
-//   ]).isRequired,
-//   cycle: PropTypes.bool,
-//   eraseDelay: PropTypes.number,
-//   startTypingDelay: PropTypes.number,
-//   cycleType: PropTypes.oneOf(['erase', 'reset']),
-//   pause: PropTypes.bool,
-//   className: PropTypes.string,
-//   onTypingDone: PropTypes.func,
-//   defaultElement: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
-//   typingDelay: PropTypes.number,
-//   hideCursorDelay: PropTypes.number,
-//   cursorColor: PropTypes.string,
-//   cursorWidth: PropTypes.number
-// };
+Typewrite.propTypes = {
+  children: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.element,
+    PropTypes.array
+  ]).isRequired,
+  cycle: PropTypes.bool,
+  eraseDelay: PropTypes.number,
+  startTypingDelay: PropTypes.number,
+  cycleType: PropTypes.oneOf(['erase', 'reset']),
+  pause: PropTypes.bool,
+  className: PropTypes.string,
+  onTypingDone: PropTypes.func,
+  defaultElement: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
+  typingDelay: PropTypes.number,
+  hideCursorDelay: PropTypes.number,
+  cursorColor: PropTypes.string,
+  cursorWidth: PropTypes.number
+};
 
 export default Typewrite;
