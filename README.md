@@ -1,5 +1,5 @@
 # react-typewrite
-<img alt="react-typewrite" src="https://raw.githubusercontent.com/oliverox/react-typewrite/master/public/logo.svg"/><br/>
+[[https://raw.githubusercontent.com/oliverox/react-typewrite/master/public/logo.svg|alt=react-typewrite]]<br/>
 A customizable typewriter component built with React.<br/>**3KB gziped** (including styling).
 
 ### Features
