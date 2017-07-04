@@ -28,7 +28,7 @@ import Typewrite from 'react-typewrite';
 
 ### API
 | Props | Type| Description |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | className | String | Applies a class style to the element. |
 | cycle | Boolean | Cycle through a list of child elements.<br/>Default: `false`. |
 | cycleType | String | `erase`: erases previous element before typing the next element.<br/>`reset`: resets cursor to start position before typing the next element.<br/>Default: `erase`. |
