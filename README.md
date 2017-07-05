@@ -1,13 +1,14 @@
 ![react-typewrite](https://raw.githubusercontent.com/oliverox/react-typewrite/master/public/logo.png)<br/>
 -----
-A customizable typewriter component built with React.<br/>**3KB gziped** (including styling).
+The simplest customizable typewriter component built with React.<br/>**3KB gziped** (including styling).
 
 ### Features
-- Supports infinitely nested elements.
-- Allows custom typing and erasing speeds.
-- Cycles easily through a list of elements.
-- Gives full control on styling with CSS.
-- Allows custom cursor.
+✔️ Supports infinitely nested JSX elements.<br/>
+✔️ Preserves formatting on child elements.<br/>
+✔️ Allows custom typing and erasing speeds.<br/>
+✔️ Cycles easily through a list of elements.<br/>
+✔️ Gives full control on styling with CSS.<br/>
+✔️ Allows custom cursor.<br/>
 
 ### Demo
 
@@ -16,7 +17,7 @@ A customizable typewriter component built with React.<br/>**3KB gziped** (includ
 ### Installation
 
 ```bash
-npm install react-typewrite
+npm install @oliverox/react-typewrite
 ```
 
 ### Usage
