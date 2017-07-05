@@ -1,18 +1,36 @@
 {
-  "name": "react-typewrite",
+  "name": "@oliverox/react-typewrite",
+  "description": "The simplest customizable typewriter component built with React.",
+  "author": "Oliver Oxenham",
+  "license": "MIT",
+  "homepage": "https://github.com/oliverox/react-typewrite",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oliverox/react-typewrite.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oliverox/react-typewrite/issues"
+  },
+  "keywords": [
+    "react",
+    "component",
+    "typewrite",
+    "typing",
+    "react-typewrite"
+  ],
+  "main": "lib/index.js",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "react": "^15.5.4",
-    "react-dom": "^15.5.4"
-  },
-  "devDependencies": {
-    "@reactmarket/component-generator": "0.0.14"
-  },
+  "dependencies": {},
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "react": "^15.6.0",
+    "react-dom": "^15.6.0",
+    "webpack": "^3.0.0"
   }
 }

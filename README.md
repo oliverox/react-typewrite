@@ -22,7 +22,7 @@ npm install @oliverox/react-typewrite
 
 ### Usage
 ```javascript
-import Typewrite from 'react-typewrite';
+import Typewrite from '@oliverox/react-typewrite';
 
 <Typewrite>The earth is but one country, and mankind its citizens.</Typewrite>
 ```
